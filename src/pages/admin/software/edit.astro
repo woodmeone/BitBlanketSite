@@ -124,10 +124,6 @@ const title = '编辑分享 - 比特毯子';
           (document.getElementById('download_url') as HTMLInputElement).value = item.download_url || '';
           (document.getElementById('hidden_content') as HTMLTextAreaElement).value = item.hidden_content || '';
           (document.getElementById('published') as HTMLInputElement).checked = item.published === 1;
-          
-          if (item.hidden_content) {
-            hiddenContentWrapper.classList.remove('hidden');
-          }
         } else {
           window.location.href = '/admin/software';
         }

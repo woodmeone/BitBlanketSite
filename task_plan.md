@@ -80,6 +80,19 @@
 
 ---
 
+## Phase 7: 功能优化 ✅
+
+**状态**: `completed`
+
+**完成内容**:
+- [x] 前台分享页隐藏域默认隐藏，点击展开
+- [x] 后台待办管理简化为表格列表
+- [x] 修复 AdminLayout Tailwind CDN 加载问题
+- [x] 修复后台编辑保存无反应问题
+- [x] 已发布数据可在后台编辑修改
+
+---
+
 ## 技术决策
 
 ### 本地开发方案
@@ -107,21 +120,8 @@
 | api/software/view.ts 导入路径错误 | 1 | 修复为 `../../../lib/db` |
 | LocalDatabase UPDATE 语句参数解析错误 | 1 | 重写 handleUpdate 方法，正确处理 CURRENT_TIMESTAMP |
 | 动态页面使用 getStaticPaths 导致报错 | 1 | 移除 getStaticPaths，使用服务器端渲染 |
-
----
-
-## Phase 7: 功能优化 ⏳
-
-**状态**: `in_progress`
-
-**待完成内容**:
-- [ ] 动画系统（GSAP 集成）
-- [ ] 心情主题系统完善
-- [ ] 暗色模式完善
-- [ ] 性能优化
-- [ ] SEO 优化
-
-**详细计划**: 见 [optimization_plan.md](./optimization_plan.md)
+| AdminLayout Tailwind CDN CORS 错误 | 1 | 移除 CDN，改用项目内置 Tailwind 配置 |
+| 后台编辑保存无反应 | 1 | 修复 Tailwind 加载问题 + db.ts 循环逻辑 |
 
 ---
 

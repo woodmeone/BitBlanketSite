@@ -56,12 +56,21 @@ const renderedContent = item.content ? await marked(item.content) : '';
         )}
         
         {item.hidden_content && (
-          <div class="border-2 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-6">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="text-lg">🔒</span>
-              <span class="font-medium">隐藏内容</span>
+          <div class="mb-6">
+            <button id="toggleHiddenBtn" class="w-full border-2 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 text-left hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-lg">🔒</span>
+                  <span class="font-medium">隐藏内容</span>
+                </div>
+                <svg class="w-5 h-5 text-gray-500 transition-transform" id="toggleIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            <div id="hiddenContent" class="hidden border-2 border-t-0 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-b-lg p-4">
+              <p class="text-sm whitespace-pre-wrap">{item.hidden_content}</p>
             </div>
-            <p class="text-sm whitespace-pre-wrap">{item.hidden_content}</p>
           </div>
         )}
         
@@ -110,4 +119,15 @@ const renderedContent = item.content ? await marked(item.content) : '';
   }
   
   incrementViews();
+
+  const toggleBtn = document.getElementById('toggleHiddenBtn');
+  const hiddenContent = document.getElementById('hiddenContent');
+  const toggleIcon = document.getElementById('toggleIcon');
+  
+  if (toggleBtn && hiddenContent && toggleIcon) {
+    toggleBtn.addEventListener('click', () => {
+      hiddenContent.classList.toggle('hidden');
+      toggleIcon.style.transform = hiddenContent.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    });
+  }
 </script>

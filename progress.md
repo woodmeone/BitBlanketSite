@@ -1,6 +1,6 @@
 # 比特毯子项目进度总结
 
-> 最后更新：2026-02-16
+> 最后更新：2026-02-17
 > 
 > **🎉 项目已上线**: https://671992df.bit-blanket.pages.dev
 
@@ -27,7 +27,7 @@
 | 随笔管理 | `/admin/posts` | 简化表单 + URL 自动生成 |
 | 分享管理 | `/admin/software` | 隐藏域点击展开 |
 | 项目管理 | `/admin/projects` | 使用场景 Tooltip |
-| 待办管理 | `/admin/todos` | 看板视图 + 拖拽 |
+| 待办管理 | `/admin/todos` | 表格列表 + 弹窗表单 |
 | 粉丝互动 | `/admin/interactions` | 采纳/忽略/回复 |
 
 **布局组件**：`src/layouts/AdminLayout.astro`（顶部 Tab 导航）
@@ -39,9 +39,9 @@
 | 首页 | `/` | 静态 |
 | 随笔列表 | `/blog` | 数据库 |
 | 随笔详情 | `/blog/[slug]` | 数据库 |
-| 分享 | `/software` | 数据库 + 隐藏域 |
+| 分享 | `/software` | 数据库 + 隐藏域（点击展开） |
 | 项目 | `/projects` | 数据库 + Tooltip |
-| 待办 | `/todos` | 数据库 |
+| 待办 | `/todos` | 数据库（状态区分显示） |
 | 粉丝互动 | `/community` | 数据库 |
 | 归档 | `/archive` | 静态 |
 | 关于 | `/about` | 静态 |
@@ -157,3 +157,14 @@ pnpm run deploy
 3. **SEO**：管理后台已添加 `noindex` meta 标签
 4. **UI 风格**：保持拼贴风格设计
 5. **部署**：通过 `pnpm exec wrangler pages deploy dist --project-name=bit-blanket` 部署
+
+---
+
+## 更新日志
+
+### 2026-02-17
+- **前台分享页**：隐藏域默认隐藏，点击按钮展开显示
+- **后台待办管理**：简化为表格列表形式，移除看板视图
+- **后台布局**：修复 Tailwind CDN 加载问题，改用项目内置 Tailwind 配置
+- **后台编辑**：修复编辑保存无反应的问题
+- **数据管理**：已发布的数据可以在后台编辑修改

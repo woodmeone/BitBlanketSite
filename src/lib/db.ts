@@ -210,9 +210,9 @@ class LocalDatabase implements D1Database {
       
       let paramIndex = 0;
       
-      assignments.forEach((assignment) => {
+      for (const assignment of assignments) {
         const colMatch = assignment.match(/^(\w+)\s*=\s*(.+)$/);
-        if (!colMatch) return;
+        if (!colMatch) continue;
         
         const col = colMatch[1];
         const value = colMatch[2].trim();
@@ -228,7 +228,7 @@ class LocalDatabase implements D1Database {
         } else if (value.toUpperCase() === 'CURRENT_TIMESTAMP') {
           table[idIndex][col] = new Date().toISOString();
         }
-      });
+      }
       
       changes = 1;
     }
