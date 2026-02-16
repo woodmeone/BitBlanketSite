@@ -1,0 +1,151 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const title = '管理后台 - 比特毯子';
+---
+
+<AdminLayout title={title}>
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">欢迎回来</h1>
+    <p class="text-gray-600 dark:text-gray-400 mt-1">管理你的比特毯子网站内容</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <a href="/admin/posts" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">随笔管理</dt>
+              <dd id="postsCount" class="text-lg font-medium text-gray-900 dark:text-white">-</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/admin/software" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">分享管理</dt>
+              <dd id="softwareCount" class="text-lg font-medium text-gray-900 dark:text-white">-</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/admin/projects" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">项目管理</dt>
+              <dd id="projectsCount" class="text-lg font-medium text-gray-900 dark:text-white">-</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a href="/admin/todos" class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg hover:shadow-lg transition-shadow">
+      <div class="p-5">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 bg-yellow-500 rounded-md p-3">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          </div>
+          <div class="ml-5 w-0 flex-1">
+            <dl>
+              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">待办管理</dt>
+              <dd id="todosCount" class="text-lg font-medium text-gray-900 dark:text-white">-</dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
+        快速操作
+      </h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <a href="/admin/posts/new" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          新建随笔
+        </a>
+        <a href="/admin/software/new" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700">
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          新建分享
+        </a>
+        <a href="/admin/projects/new" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700">
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          新建项目
+        </a>
+        <a href="/admin/interactions" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-pink-600 hover:bg-pink-700">
+          <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+          </svg>
+          粉丝互动
+        </a>
+      </div>
+    </div>
+  </div>
+</AdminLayout>
+
+<script>
+  const token = localStorage.getItem('auth_token');
+
+  async function loadStats() {
+    try {
+      const [postsRes, softwareRes, projectsRes, todosRes] = await Promise.all([
+        fetch('/api/posts', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/software', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/projects', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/todos', { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
+
+      const [posts, software, projects, todos] = await Promise.all([
+        postsRes.json(),
+        softwareRes.json(),
+        projectsRes.json(),
+        todosRes.json()
+      ]);
+
+      document.getElementById('postsCount')!.textContent = posts.posts?.length || 0;
+      document.getElementById('softwareCount')!.textContent = software.software?.length || 0;
+      document.getElementById('projectsCount')!.textContent = projects.projects?.length || 0;
+      document.getElementById('todosCount')!.textContent = todos.todos?.length || 0;
+    } catch (error) {
+      console.error('加载统计失败:', error);
+    }
+  }
+
+  loadStats();
+</script>

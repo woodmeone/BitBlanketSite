@@ -1,0 +1,186 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const title = '新建随笔 - 比特毯子';
+---
+
+<AdminLayout title={title} activeTab="posts">
+  <div class="mb-6">
+    <a href="/admin/posts" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+      ← 返回列表
+    </a>
+  </div>
+
+  <form id="postForm" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标题 <span class="text-red-500">*</span></label>
+          <input type="text" id="title" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            placeholder="输入文章标题" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">正文 <span class="text-red-500">*</span></label>
+          <textarea id="content" rows="20" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2 font-mono"
+            placeholder="支持 Markdown 格式"></textarea>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL (自动生成)</label>
+          <div class="mt-1 flex items-center space-x-2">
+            <code id="slugDisplay" class="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-600 dark:text-gray-400">-</code>
+            <button type="button" id="editSlugBtn" class="text-indigo-600 hover:text-indigo-800 text-sm">编辑</button>
+          </div>
+          <input type="text" id="slug" class="hidden mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标签</label>
+          <input type="text" id="tags"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            placeholder="多个标签用逗号分隔" />
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="published" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+          <label for="published" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">立即发布</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="errorMsg" class="hidden text-red-500 text-sm"></div>
+
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <a href="/admin/posts" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+        取消
+      </a>
+      <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+        保存
+      </button>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    window.location.href = '/admin/login';
+  }
+
+  const titleInput = document.getElementById('title') as HTMLInputElement;
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  const slugDisplay = document.getElementById('slugDisplay') as HTMLElement;
+  const editSlugBtn = document.getElementById('editSlugBtn') as HTMLButtonElement;
+  let isEditingSlug = false;
+
+  function getPinyinInitials(text: string): string {
+    const pinyinMap: Record<string, string> = {
+      '啊': 'a', '吧': 'b', '擦': 'c', '搭': 'd', '鹅': 'e', '发': 'f', '噶': 'g', '哈': 'h',
+      '击': 'j', '咔': 'k', '拉': 'l', '妈': 'm', '拿': 'n', '哦': 'o', '啪': 'p', '七': 'q',
+      '然': 'r', '撒': 's', '他': 't', '挖': 'w', '西': 'x', '呀': 'y', '杂': 'z',
+      '阿': 'a', '爱': 'a', '安': 'a', '被': 'b', '不': 'b', '从': 'c', '出': 'c', '的': 'd',
+      '大': 'd', '地': 'd', '得': 'd', '而': 'e', '二': 'e', '个': 'g', '国': 'g', '过': 'g',
+      '和': 'h', '会': 'h', '好': 'h', '很': 'h', '还': 'h', '就': 'j', '进': 'j', '可': 'k',
+      '来': 'l', '了': 'l', '们': 'm', '没': 'm', '你': 'n', '那': 'n', '能': 'n', '年': 'n',
+      '人': 'r', '说': 's', '是': 's', '时': 's', '生': 's', '上': 's', '他': 't', '她': 't',
+      '它': 't', '天': 't', '我': 'w', '为': 'w', '无': 'w', '小': 'x', '下': 'x', '想': 'x',
+      '有': 'y', '一': 'y', '也': 'y', '要': 'y', '以': 'y', '在': 'z', '这': 'z', '中': 'z',
+      '作': 'z', '自': 'z', '子': 'z', '之': 'z', '主': 'z', '着': 'z', '最': 'z',
+      '编': 'b', '程': 'c', '指': 'z', '南': 'n', '博': 'b', '客': 'k', '随': 's', '笔': 'b',
+      '人': 'r', '工': 'g', '智': 'z', '能': 'n', '学': 'x', '习': 'x', '技': 'j', '术': 's',
+      '开': 'k', '源': 'y', '项': 'x', '目': 'm', '软': 'r', '件': 'j', '分': 'f', '享': 'x',
+      '待': 'd', '办': 'b', '粉': 'f', '丝': 's', '互': 'h', '动': 'd', '建': 'j', '议': 'y',
+      '投': 't', '票': 'p', '评': 'p', '论': 'l', '回': 'h', '复': 'f', '设': 's', '计': 'j',
+      '开': 'k', '发': 'f', '测': 'c', '试': 's', '部': 'b', '署': 's', '优': 'y', '化': 'h',
+      '新': 'x', '旧': 'j', '更': 'g', '新': 'x', '删': 's', '除': 'c', '修': 'x', '改': 'g',
+      '添': 't', '加': 'j', '查': 'c', '看': 'k', '搜': 's', '索': 's', '筛': 's', '选': 'x',
+      '排': 'p', '序': 'x', '分': 'f', '类': 'l', '标': 'b', '签': 'q', '状': 'z', '态': 't',
+      '进': 'j', '行': 'x', '完': 'w', '成': 'c', '取': 'q', '消': 'x', '准': 'z', '备': 'b',
+    };
+    
+    let result = '';
+    for (const char of text) {
+      if (/[a-zA-Z]/.test(char)) {
+        result += char.toLowerCase();
+      } else if (/[0-9]/.test(char)) {
+        result += char;
+      } else if (/[\u4e00-\u9fa5]/.test(char)) {
+        result += pinyinMap[char] || char;
+      }
+    }
+    return result.toLowerCase().substring(0, 20);
+  }
+
+  function updateSlug() {
+    if (!isEditingSlug) {
+      const title = titleInput.value;
+      const slug = getPinyinInitials(title);
+      slugInput.value = slug;
+      slugDisplay.textContent = slug || '-';
+    }
+  }
+
+  titleInput.addEventListener('input', updateSlug);
+
+  editSlugBtn.addEventListener('click', () => {
+    isEditingSlug = !isEditingSlug;
+    if (isEditingSlug) {
+      slugInput.classList.remove('hidden');
+      slugDisplay.classList.add('hidden');
+      editSlugBtn.textContent = '完成';
+      slugInput.value = slugDisplay.textContent !== '-' ? slugDisplay.textContent || '' : '';
+      slugInput.focus();
+    } else {
+      slugInput.classList.add('hidden');
+      slugDisplay.classList.remove('hidden');
+      editSlugBtn.textContent = '编辑';
+      slugDisplay.textContent = slugInput.value || '-';
+    }
+  });
+
+  document.getElementById('postForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const form = e.target as HTMLFormElement;
+    const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+    
+    const slug = isEditingSlug ? slugInput.value : (slugDisplay.textContent !== '-' ? slugDisplay.textContent || '' : '');
+
+    const data = {
+      title: titleInput.value,
+      slug: slug || getPinyinInitials(titleInput.value),
+      content: (document.getElementById('content') as HTMLTextAreaElement).value,
+      tags: (document.getElementById('tags') as HTMLInputElement).value,
+      published: (document.getElementById('published') as HTMLInputElement).checked
+    };
+
+    try {
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        window.location.href = '/admin/posts';
+      } else {
+        errorMsg.textContent = result.error || '保存失败';
+        errorMsg.classList.remove('hidden');
+      }
+    } catch (error) {
+      errorMsg.textContent = '网络错误，请重试';
+      errorMsg.classList.remove('hidden');
+    }
+  });
+</script>

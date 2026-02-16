@@ -1,0 +1,110 @@
+---
+interface Props {
+  title: string;
+  activeTab?: 'posts' | 'software' | 'projects' | 'todos' | 'interactions';
+}
+
+const { title, activeTab } = Astro.props;
+
+const tabs = [
+  { id: 'posts', label: '随笔页', href: '/admin/posts' },
+  { id: 'software', label: '分享页', href: '/admin/software' },
+  { id: 'projects', label: '项目页', href: '/admin/projects' },
+  { id: 'todos', label: '待办页', href: '/admin/todos' },
+  { id: 'interactions', label: '粉丝互动', href: '/admin/interactions' },
+];
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>{title}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <script is:inline>
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <div class="min-h-screen">
+    <nav class="bg-white dark:bg-gray-800 shadow">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <a href="/admin" class="text-xl font-bold text-gray-900 dark:text-white mr-8">
+              比特毯子后台
+            </a>
+            <div class="flex space-x-1">
+              {tabs.map((tab) => (
+                <a
+                  href={tab.href}
+                  class={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-200'
+                      : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {tab.label}
+                </a>
+              ))}
+            </div>
+          </div>
+          <div class="flex items-center space-x-4">
+            <a href="/" target="_blank" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+              查看网站
+            </a>
+            <button id="logoutBtn" class="text-red-600 hover:text-red-800">
+              退出登录
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <slot />
+    </main>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      window.location.href = '/admin/login';
+    }
+
+    async function verifyAuth() {
+      try {
+        const response = await fetch('/api/auth/verify', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!data.authenticated) {
+          localStorage.removeItem('auth_token');
+          window.location.href = '/admin/login';
+        }
+      } catch (error) {
+        localStorage.removeItem('auth_token');
+        window.location.href = '/admin/login';
+      }
+    }
+
+    verifyAuth();
+
+    document.getElementById('logoutBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('auth_token');
+      window.location.href = '/admin/login';
+    });
+  </script>
+</body>
+</html>

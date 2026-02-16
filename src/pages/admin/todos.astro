@@ -1,0 +1,342 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const title = '待办管理 - 比特毯子';
+---
+
+<AdminLayout title={title} activeTab="todos">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">待办管理</h1>
+    <button id="addTodoBtn" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700">
+      <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      新建待办
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="kanbanBoard">
+    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4" data-status="pending">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">准备中</h2>
+        <span class="bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 text-sm px-2 py-1 rounded-full" id="pendingCount">0</span>
+      </div>
+      <div class="space-y-3 min-h-[200px] todo-column" data-status="pending" id="pendingColumn">
+      </div>
+    </div>
+
+    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4" data-status="in_progress">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">进行中</h2>
+        <span class="bg-blue-200 dark:bg-blue-800 text-blue-800 dark:text-blue-200 text-sm px-2 py-1 rounded-full" id="inProgressCount">0</span>
+      </div>
+      <div class="space-y-3 min-h-[200px] todo-column" data-status="in_progress" id="inProgressColumn">
+      </div>
+    </div>
+
+    <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4" data-status="completed">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-gray-700 dark:text-gray-200">已完成</h2>
+        <span class="bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 text-sm px-2 py-1 rounded-full" id="completedCount">0</span>
+      </div>
+      <div class="space-y-3 min-h-[200px] todo-column" data-status="completed" id="completedColumn">
+      </div>
+    </div>
+  </div>
+
+  <div id="todoModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800">
+      <form id="todoForm" class="space-y-4">
+        <input type="hidden" id="todoId" />
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">任务 <span class="text-red-500">*</span></label>
+          <input type="text" id="todoTitle" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">描述</label>
+          <textarea id="todoDescription" rows="2"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-yellow-500 focus:ring-yellow-500 sm:text-sm border p-2"></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<style>
+  .todo-card {
+    cursor: grab;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .todo-card:active {
+    cursor: grabbing;
+  }
+  .todo-card.dragging {
+    opacity: 0.5;
+    transform: rotate(3deg);
+  }
+  .todo-column.drag-over {
+    background-color: rgba(59, 130, 246, 0.1);
+    border: 2px dashed #3b82f6;
+    border-radius: 8px;
+  }
+</style>
+
+<script>
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    window.location.href = '/admin/login';
+  }
+
+  const modal = document.getElementById('todoModal')!;
+  const form = document.getElementById('todoForm') as HTMLFormElement;
+  let todos: any[] = [];
+  let draggedElement: HTMLElement | null = null;
+
+  async function loadTodos() {
+    try {
+      const response = await fetch('/api/todos', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      
+      if (data.success && data.todos) {
+        todos = data.todos;
+        renderKanban();
+      }
+    } catch (error) {
+      console.error('加载失败:', error);
+    }
+  }
+
+  function renderKanban() {
+    const pendingColumn = document.getElementById('pendingColumn')!;
+    const inProgressColumn = document.getElementById('inProgressColumn')!;
+    const completedColumn = document.getElementById('completedColumn')!;
+
+    const pendingTodos = todos.filter(t => t.status === 'pending');
+    const inProgressTodos = todos.filter(t => t.status === 'in_progress');
+    const completedTodos = todos.filter(t => t.status === 'completed');
+
+    document.getElementById('pendingCount')!.textContent = pendingTodos.length.toString();
+    document.getElementById('inProgressCount')!.textContent = inProgressTodos.length.toString();
+    document.getElementById('completedCount')!.textContent = completedTodos.length.toString();
+
+    pendingColumn.innerHTML = pendingTodos.map(t => createTodoCard(t)).join('');
+    inProgressColumn.innerHTML = inProgressTodos.map(t => createTodoCard(t)).join('');
+    completedColumn.innerHTML = completedTodos.map(t => createTodoCard(t)).join('');
+
+    setupDragAndDrop();
+  }
+
+  function createTodoCard(todo: any): string {
+    return `
+      <div class="todo-card bg-white dark:bg-gray-800 shadow rounded-lg p-4" 
+           draggable="true" 
+           data-id="${todo.id}"
+           data-status="${todo.status}">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <h3 class="text-sm font-medium text-gray-900 dark:text-white">${todo.title}</h3>
+            ${todo.description ? `<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">${todo.description}</p>` : ''}
+          </div>
+          <div class="flex space-x-1 ml-2">
+            <button onclick="editTodo(${todo.id})" class="text-gray-400 hover:text-indigo-600">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+            <button onclick="deleteTodo(${todo.id})" class="text-gray-400 hover:text-red-600">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function setupDragAndDrop() {
+    const cards = document.querySelectorAll('.todo-card');
+    const columns = document.querySelectorAll('.todo-column');
+
+    cards.forEach(card => {
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
+    });
+
+    columns.forEach(column => {
+      column.addEventListener('dragover', handleDragOver);
+      column.addEventListener('dragleave', handleDragLeave);
+      column.addEventListener('drop', handleDrop);
+    });
+  }
+
+  function handleDragStart(e: DragEvent) {
+    draggedElement = e.target as HTMLElement;
+    draggedElement.classList.add('dragging');
+    e.dataTransfer!.effectAllowed = 'move';
+    e.dataTransfer!.setData('text/plain', draggedElement.dataset.id || '');
+  }
+
+  function handleDragEnd(e: DragEvent) {
+    if (draggedElement) {
+      draggedElement.classList.remove('dragging');
+    }
+    draggedElement = null;
+    document.querySelectorAll('.todo-column').forEach(col => {
+      col.classList.remove('drag-over');
+    });
+  }
+
+  function handleDragOver(e: DragEvent) {
+    e.preventDefault();
+    e.dataTransfer!.dropEffect = 'move';
+    (e.currentTarget as HTMLElement).classList.add('drag-over');
+  }
+
+  function handleDragLeave(e: DragEvent) {
+    (e.currentTarget as HTMLElement).classList.remove('drag-over');
+  }
+
+  async function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    const column = e.currentTarget as HTMLElement;
+    column.classList.remove('drag-over');
+
+    const todoId = e.dataTransfer!.getData('text/plain');
+    const newStatus = column.dataset.status as string;
+
+    if (todoId && newStatus) {
+      await updateTodoStatus(parseInt(todoId), newStatus);
+    }
+  }
+
+  async function updateTodoStatus(id: number, status: string) {
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id, status })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        const todo = todos.find(t => t.id === id);
+        if (todo) {
+          todo.status = status;
+        }
+        renderKanban();
+      }
+    } catch (error) {
+      console.error('更新失败:', error);
+    }
+  }
+
+  function openModal(todo?: any) {
+    (document.getElementById('todoId') as HTMLInputElement).value = todo?.id || '';
+    (document.getElementById('todoTitle') as HTMLInputElement).value = todo?.title || '';
+    (document.getElementById('todoDescription') as HTMLTextAreaElement).value = todo?.description || '';
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+  }
+
+  (window as any).editTodo = (id: number) => {
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+      openModal(todo);
+    }
+  };
+
+  async function deleteTodoAction(id: number) {
+    if (!confirm('确定要删除这个待办吗？')) return;
+    
+    try {
+      const response = await fetch(`/api/todos?id=${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        todos = todos.filter(t => t.id !== id);
+        renderKanban();
+      } else {
+        alert(data.error || '删除失败');
+      }
+    } catch (error) {
+      alert('删除失败');
+    }
+  }
+
+  (window as any).deleteTodo = deleteTodoAction;
+
+  document.getElementById('addTodoBtn')?.addEventListener('click', () => openModal());
+  document.getElementById('cancelBtn')?.addEventListener('click', closeModal);
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const id = (document.getElementById('todoId') as HTMLInputElement).value;
+    const data = {
+      title: (document.getElementById('todoTitle') as HTMLInputElement).value,
+      description: (document.getElementById('todoDescription') as HTMLTextAreaElement).value,
+      status: 'pending' as string
+    };
+
+    try {
+      const url = '/api/todos' + (id ? `?id=${id}` : '');
+      const method = id ? 'PUT' : 'POST';
+      
+      if (id) {
+        (data as any).id = parseInt(id);
+        const existingTodo = todos.find(t => t.id === parseInt(id));
+        if (existingTodo) {
+          data.status = existingTodo.status;
+        }
+      }
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        closeModal();
+        loadTodos();
+      } else {
+        alert(result.error || '保存失败');
+      }
+    } catch (error) {
+      alert('网络错误，请重试');
+    }
+  });
+
+  loadTodos();
+</script>

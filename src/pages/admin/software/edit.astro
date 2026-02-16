@@ -1,0 +1,181 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const title = '编辑分享 - 比特毯子';
+---
+
+<AdminLayout title={title} activeTab="software">
+  <div class="mb-6">
+    <a href="/admin/software" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+      ← 返回列表
+    </a>
+  </div>
+
+  <form id="softwareForm" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
+    <input type="hidden" id="id" />
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标题 <span class="text-red-500">*</span></label>
+          <input type="text" id="name" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">正文</label>
+          <textarea id="content" rows="12"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2 font-mono"></textarea>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">隐藏域</label>
+            <button type="button" id="toggleHidden" class="text-sm text-green-600 hover:text-green-800">
+              点击展开/收起
+            </button>
+          </div>
+          <div id="hiddenContentWrapper" class="hidden">
+            <textarea id="hidden_content" rows="4"
+              class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2 font-mono bg-yellow-50 dark:bg-yellow-900/20"
+              placeholder="网盘链接、提取码等隐藏内容..."></textarea>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">此内容在前台需要点击才能展开显示</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL</label>
+          <input type="text" id="website"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标签</label>
+          <input type="text" id="category"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2"
+            placeholder="多个标签用逗号分隔" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">下载链接</label>
+          <input type="text" id="download_url"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm border p-2" />
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="published" class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded" />
+          <label for="published" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">已发布</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="errorMsg" class="hidden text-red-500 text-sm"></div>
+
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <a href="/admin/software" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+        取消
+      </a>
+      <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+        保存
+      </button>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    window.location.href = '/admin/login';
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const softwareId = urlParams.get('id');
+
+  if (!softwareId) {
+    window.location.href = '/admin/software';
+  }
+
+  const toggleHiddenBtn = document.getElementById('toggleHidden') as HTMLButtonElement;
+  const hiddenContentWrapper = document.getElementById('hiddenContentWrapper') as HTMLDivElement;
+
+  toggleHiddenBtn.addEventListener('click', () => {
+    hiddenContentWrapper.classList.toggle('hidden');
+    toggleHiddenBtn.textContent = hiddenContentWrapper.classList.contains('hidden') ? '点击展开/收起' : '收起隐藏域';
+  });
+
+  async function loadSoftware() {
+    try {
+      const response = await fetch('/api/software', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      
+      if (data.success && data.software) {
+        const item = data.software.find((s: any) => s.id === parseInt(softwareId!));
+        if (item) {
+          (document.getElementById('id') as HTMLInputElement).value = item.id;
+          (document.getElementById('name') as HTMLInputElement).value = item.name || '';
+          (document.getElementById('content') as HTMLTextAreaElement).value = item.content || '';
+          (document.getElementById('website') as HTMLInputElement).value = item.website || '';
+          (document.getElementById('category') as HTMLInputElement).value = item.category || '';
+          (document.getElementById('download_url') as HTMLInputElement).value = item.download_url || '';
+          (document.getElementById('hidden_content') as HTMLTextAreaElement).value = item.hidden_content || '';
+          (document.getElementById('published') as HTMLInputElement).checked = item.published === 1;
+          
+          if (item.hidden_content) {
+            hiddenContentWrapper.classList.remove('hidden');
+          }
+        } else {
+          window.location.href = '/admin/software';
+        }
+      }
+    } catch (error) {
+      console.error('加载失败:', error);
+    }
+  }
+
+  loadSoftware();
+
+  document.getElementById('softwareForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+
+    const data = {
+      id: parseInt((document.getElementById('id') as HTMLInputElement).value),
+      name: (document.getElementById('name') as HTMLInputElement).value,
+      content: (document.getElementById('content') as HTMLTextAreaElement).value,
+      website: (document.getElementById('website') as HTMLInputElement).value,
+      category: (document.getElementById('category') as HTMLInputElement).value,
+      download_url: (document.getElementById('download_url') as HTMLInputElement).value,
+      hidden_content: (document.getElementById('hidden_content') as HTMLTextAreaElement).value,
+      published: (document.getElementById('published') as HTMLInputElement).checked
+    };
+
+    try {
+      const response = await fetch('/api/software', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        window.location.href = '/admin/software';
+      } else {
+        errorMsg.textContent = result.error || '保存失败';
+        errorMsg.classList.remove('hidden');
+      }
+    } catch (error) {
+      errorMsg.textContent = '网络错误，请重试';
+      errorMsg.classList.remove('hidden');
+    }
+  });
+</script>

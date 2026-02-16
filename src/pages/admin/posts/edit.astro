@@ -1,0 +1,171 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+
+const title = '编辑随笔 - 比特毯子';
+---
+
+<AdminLayout title={title} activeTab="posts">
+  <div class="mb-6">
+    <a href="/admin/posts" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">
+      ← 返回列表
+    </a>
+  </div>
+
+  <form id="postForm" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 space-y-6">
+    <input type="hidden" id="id" />
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2 space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标题 <span class="text-red-500">*</span></label>
+          <input type="text" id="title" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">正文 <span class="text-red-500">*</span></label>
+          <textarea id="content" rows="20" required
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2 font-mono"></textarea>
+        </div>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">URL</label>
+          <div class="mt-1 flex items-center space-x-2">
+            <code id="slugDisplay" class="flex-1 px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-md text-sm text-gray-600 dark:text-gray-400">-</code>
+            <button type="button" id="editSlugBtn" class="text-indigo-600 hover:text-indigo-800 text-sm">编辑</button>
+          </div>
+          <input type="text" id="slug" class="hidden mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2" />
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">标签</label>
+          <input type="text" id="tags"
+            class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+            placeholder="多个标签用逗号分隔" />
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="published" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+          <label for="published" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">已发布</label>
+        </div>
+      </div>
+    </div>
+
+    <div id="errorMsg" class="hidden text-red-500 text-sm"></div>
+
+    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+      <a href="/admin/posts" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+        取消
+      </a>
+      <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+        保存
+      </button>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  const token = localStorage.getItem('auth_token');
+  
+  if (!token) {
+    window.location.href = '/admin/login';
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const postId = urlParams.get('id');
+
+  if (!postId) {
+    window.location.href = '/admin/posts';
+  }
+
+  const slugInput = document.getElementById('slug') as HTMLInputElement;
+  const slugDisplay = document.getElementById('slugDisplay') as HTMLElement;
+  const editSlugBtn = document.getElementById('editSlugBtn') as HTMLButtonElement;
+  let isEditingSlug = false;
+
+  editSlugBtn.addEventListener('click', () => {
+    isEditingSlug = !isEditingSlug;
+    if (isEditingSlug) {
+      slugInput.classList.remove('hidden');
+      slugDisplay.classList.add('hidden');
+      editSlugBtn.textContent = '完成';
+      slugInput.value = slugDisplay.textContent !== '-' ? slugDisplay.textContent || '' : '';
+      slugInput.focus();
+    } else {
+      slugInput.classList.add('hidden');
+      slugDisplay.classList.remove('hidden');
+      editSlugBtn.textContent = '编辑';
+      slugDisplay.textContent = slugInput.value || '-';
+    }
+  });
+
+  async function loadPost() {
+    try {
+      const response = await fetch('/api/posts', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      
+      if (data.success && data.posts) {
+        const post = data.posts.find((p: any) => p.id === parseInt(postId!));
+        if (post) {
+          (document.getElementById('id') as HTMLInputElement).value = post.id;
+          (document.getElementById('title') as HTMLInputElement).value = post.title || '';
+          slugInput.value = post.slug || '';
+          slugDisplay.textContent = post.slug || '-';
+          (document.getElementById('tags') as HTMLInputElement).value = post.tags || '';
+          (document.getElementById('content') as HTMLTextAreaElement).value = post.content || '';
+          (document.getElementById('published') as HTMLInputElement).checked = post.published === 1;
+        } else {
+          window.location.href = '/admin/posts';
+        }
+      }
+    } catch (error) {
+      console.error('加载失败:', error);
+    }
+  }
+
+  loadPost();
+
+  document.getElementById('postForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+    
+    const slug = isEditingSlug ? slugInput.value : (slugDisplay.textContent !== '-' ? slugDisplay.textContent || '' : '');
+
+    const data = {
+      id: parseInt((document.getElementById('id') as HTMLInputElement).value),
+      title: (document.getElementById('title') as HTMLInputElement).value,
+      slug: slug,
+      content: (document.getElementById('content') as HTMLTextAreaElement).value,
+      tags: (document.getElementById('tags') as HTMLInputElement).value,
+      published: (document.getElementById('published') as HTMLInputElement).checked
+    };
+
+    try {
+      const response = await fetch('/api/posts', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        window.location.href = '/admin/posts';
+      } else {
+        errorMsg.textContent = result.error || '保存失败';
+        errorMsg.classList.remove('hidden');
+      }
+    } catch (error) {
+      errorMsg.textContent = '网络错误，请重试';
+      errorMsg.classList.remove('hidden');
+    }
+  });
+</script>
