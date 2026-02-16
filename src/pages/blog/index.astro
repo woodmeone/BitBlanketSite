@@ -1,0 +1,83 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CollageCard from '../../components/collage/CollageCard.astro';
+
+const posts = [
+  {
+    title: 'AI编程入门指南',
+    description: '从零开始学习AI辅助编程的完整指南',
+    date: '2026-02-15',
+    tags: ['AI编程', '教程', '入门'],
+    featured: true,
+  },
+  {
+    title: '使用Claude构建智能助手',
+    description: '详细讲解如何利用Claude API构建自己的智能助手',
+    date: '2026-02-10',
+    tags: ['Claude', 'API', '实践'],
+    featured: false,
+  },
+  {
+    title: '2026年必备的10款生产力工具',
+    description: '精选10款提升工作效率的软件推荐',
+    date: '2026-02-05',
+    tags: ['软件', '效率', '推荐'],
+    featured: false,
+  },
+];
+
+const tags = ['AI编程', '教程', '入门', 'Claude', 'API', '实践', '软件', '效率', '推荐'];
+---
+
+<BaseLayout title="博客">
+  <div class="space-y-8">
+    <section class="text-center py-8">
+      <CollageCard rotation={-0.5} class="inline-block px-8 py-4">
+        <h1 class="text-3xl md:text-4xl font-bold">博客文章</h1>
+      </CollageCard>
+      <p class="text-muted-foreground mt-4 max-w-2xl mx-auto">
+        记录学习过程，分享技术心得
+      </p>
+    </section>
+
+    <section class="flex flex-wrap gap-2 justify-center">
+      <button class="nav-item nav-item-active">全部</button>
+      {tags.slice(0, 5).map((tag) => (
+        <button class="nav-item nav-item-inactive">{tag}</button>
+      ))}
+    </section>
+
+    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {posts.map((post, index) => {
+        const rotation = ((index % 3) - 1) * 0.8;
+        return (
+          <a href={`/blog/${post.title.toLowerCase().replace(/\s+/g, '-')}`}>
+            <CollageCard rotation={rotation} class:list={['p-6 h-full cursor-pointer', post.featured && 'border-accent/50']}>
+              {post.featured && (
+                <span class="inline-block px-2 py-1 text-xs bg-accent text-accent-foreground mb-3">
+                  精选
+                </span>
+              )}
+              <h2 class="text-xl font-bold mb-2">{post.title}</h2>
+              <p class="text-muted-foreground text-sm mb-4">{post.description}</p>
+              <div class="flex items-center justify-between text-xs text-muted-foreground">
+                <span>{post.date}</span>
+                <div class="flex gap-1">
+                  {post.tags.slice(0, 2).map((tag) => (
+                    <span class="px-2 py-0.5 bg-secondary">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </CollageCard>
+          </a>
+        );
+      })}
+    </section>
+
+    <section class="flex justify-center gap-4">
+      <button class="nav-item nav-item-inactive">上一页</button>
+      <span class="nav-item bg-card">1 / 1</span>
+      <button class="nav-item nav-item-inactive">下一页</button>
+    </section>
+  </div>
+</BaseLayout>

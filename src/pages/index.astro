@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CollageCard from '../components/collage/CollageCard.astro';
+import MoodThemeSelector from '../components/MoodThemeSelector.vue';
+
+const features = [
+  {
+    title: 'AI编程',
+    description: '探索人工智能和编程技术',
+    link: '/projects',
+    color: '#d4463f',
+  },
+  {
+    title: '软件分享',
+    description: '精选实用软件工具',
+    link: '/software',
+    color: '#6b6556',
+  },
+  {
+    title: '粉丝互动',
+    description: '与我一起成长学习',
+    link: '/community',
+    color: '#1a1a1a',
+  },
+  {
+    title: '创作故事',
+    description: '第十九号底片的世界',
+    link: '/about',
+    color: '#d4463f',
+  },
+];
+
+const recentUpdates = [
+  {
+    title: '新增待办事项看板功能',
+    description: '现在可以实时查看我的学习进度和项目规划',
+    highlight: true,
+  },
+  {
+    title: '上传了新的AI项目教程',
+    description: '使用Claude构建智能助手的完整指南',
+    highlight: false,
+  },
+  {
+    title: '软件推荐更新',
+    description: '本月精选 10 款生产力工具分享',
+    highlight: false,
+  },
+];
+---
+
+<BaseLayout title="首页">
+  <div class="space-y-12">
+    <section class="text-center space-y-6 py-12">
+      <div class="inline-block animate-wiggle">
+        <CollageCard rotation={-1} class="px-8 py-4 border-4 border-primary/30">
+          <h1 class="text-4xl md:text-6xl font-bold text-foreground">比特毯子</h1>
+        </CollageCard>
+      </div>
+
+      <CollageCard rotation={0.5} class="max-w-2xl mx-auto px-6 py-4">
+        <p class="text-lg md:text-xl text-muted-foreground">
+          软件分享 • AI编程 • 记录我的学习之旅
+        </p>
+        <p class="text-sm text-muted-foreground mt-2">
+          3000+ 粉丝一起成长的社区
+        </p>
+      </CollageCard>
+
+      <div class="flex flex-wrap gap-4 justify-center">
+        <a href="/blog">
+          <CollageCard rotation={-0.5} class="px-6 py-3 bg-accent text-accent-foreground border-primary/50 hover:scale-105 cursor-pointer">
+            <span class="flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+              </svg>
+              阅读博客
+            </span>
+          </CollageCard>
+        </a>
+        <a href="/community">
+          <CollageCard rotation={0.5} class="px-6 py-3 cursor-pointer">
+            加入互动
+          </CollageCard>
+        </a>
+      </div>
+    </section>
+
+    <section class="grid md:grid-cols-2 gap-6">
+      {features.map((feature, index) => {
+        const rotation = ((index % 2) - 0.5) * 2;
+        return (
+          <a href={feature.link}>
+            <CollageCard rotation={rotation} class="p-6 h-full cursor-pointer group">
+              <div
+                class="inline-flex p-3 rounded-lg mb-4 border-2"
+                style={{
+                  backgroundColor: `${feature.color}15`,
+                  borderColor: `${feature.color}30`,
+                }}
+              >
+                <div
+                  class="w-6 h-6 rounded"
+                  style={{ backgroundColor: feature.color }}
+                />
+              </div>
+              <h3 class="text-xl font-bold mb-2">{feature.title}</h3>
+              <p class="text-muted-foreground">{feature.description}</p>
+            </CollageCard>
+          </a>
+        );
+      })}
+    </section>
+
+    <CollageCard rotation={-0.3} class="p-6 md:p-8">
+      <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+        <div class="w-2 h-8 bg-accent" />
+        最近更新
+      </h2>
+      <div class="space-y-4">
+        {recentUpdates.map((update) => (
+          <div class:list={['border-l-4 pl-4 py-2', update.highlight ? 'border-accent' : 'border-muted']}>
+            <p class="font-medium">{update.title}</p>
+            <p class="text-sm text-muted-foreground">{update.description}</p>
+          </div>
+        ))}
+      </div>
+    </CollageCard>
+
+    <CollageCard rotation={0.5} class="text-center p-8 md:p-12 bg-accent text-accent-foreground border-4 border-primary/30">
+      <h2 class="text-2xl md:text-3xl font-bold mb-4">
+        一起打造更好的学习社区
+      </h2>
+      <p class="text-accent-foreground/90 mb-6 max-w-2xl mx-auto">
+        无论是建议、选题还是需求，都欢迎在粉丝互动区留言。
+        让我们一起成长，一起创造！
+      </p>
+      <a href="/community">
+        <CollageCard rotation={-0.5} class="inline-block px-6 py-3 bg-secondary text-secondary-foreground cursor-pointer">
+          立即参与
+        </CollageCard>
+      </a>
+    </CollageCard>
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-1deg); }
+    50% { transform: rotate(1deg); }
+  }
+  
+  .animate-wiggle {
+    animation: wiggle 4s ease-in-out infinite;
+  }
+</style>

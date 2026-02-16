@@ -1,0 +1,27 @@
+---
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="mt-20 border-t-2 border-primary/20 bg-card/50 backdrop-blur-sm">
+  <div class="container mx-auto px-4 py-8">
+    <div class="text-center space-y-4">
+      <div class="inline-block bg-accent text-accent-foreground px-6 py-3 -rotate-1 shadow-md border-2 border-primary/30 transition-transform hover:rotate-1 hover:scale-102">
+        <p class="font-medium">© {currentYear} 比特毯子 - 记录学习，分享成长</p>
+      </div>
+      <p class="text-sm text-muted-foreground">
+        软件分享 • AI编程 • 学习记录
+      </p>
+      <div class="flex justify-center gap-4">
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors">
+          GitHub
+        </a>
+        <a href="https://bilibili.com" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-foreground transition-colors">
+          Bilibili
+        </a>
+        <a href="/rss.xml" class="text-muted-foreground hover:text-foreground transition-colors">
+          RSS
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

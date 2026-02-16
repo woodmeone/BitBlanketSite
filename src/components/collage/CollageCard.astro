@@ -1,0 +1,69 @@
+---
+export interface Props {
+  rotation?: number;
+  offsetX?: number;
+  offsetY?: number;
+  variant?: 'default' | 'torn' | 'stamped';
+  class?: string;
+}
+
+const { 
+  rotation = Math.random() * 6 - 3, 
+  offsetX = 0, 
+  offsetY = 0,
+  variant = 'default',
+  class: className 
+} = Astro.props;
+---
+
+<div 
+  class:list={['collage-card', `collage-card--${variant}`, className]}
+  style={`--rotation: ${rotation}deg; --offset-x: ${offsetX}px; --offset-y: ${offsetY}px;`}
+>
+  <slot />
+</div>
+
+<style>
+  .collage-card {
+    background: var(--card);
+    border: 2px solid var(--primary);
+    border-radius: 4px;
+    position: relative;
+    transform: rotate(var(--rotation)) 
+               translate(var(--offset-x), var(--offset-y));
+    box-shadow: var(--shadow-collage);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    overflow: hidden;
+  }
+  
+  .collage-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--paper-texture);
+    background-repeat: repeat;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  
+  .collage-card:hover {
+    transform: rotate(0deg) scale(1.02);
+    box-shadow: var(--shadow-collage-hover);
+  }
+  
+  .collage-card--torn {
+    clip-path: polygon(
+      0% 2%, 5% 0%, 15% 1%, 25% 0%, 35% 2%, 45% 0%, 
+      55% 1%, 65% 0%, 75% 2%, 85% 0%, 95% 1%, 100% 0%,
+      100% 98%, 95% 100%, 85% 99%, 75% 100%, 65% 98%, 
+      55% 100%, 45% 99%, 35% 100%, 25% 98%, 15% 100%, 
+      5% 99%, 0% 100%
+    );
+  }
+  
+  .collage-card--stamped {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+  }
+</style>

@@ -1,0 +1,29 @@
+---
+export interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['torn-edge', className]}>
+  <slot />
+</div>
+
+<style>
+  .torn-edge {
+    position: relative;
+  }
+  
+  .torn-edge::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 16px;
+    background: linear-gradient(135deg, var(--card) 25%, transparent 25%),
+                linear-gradient(225deg, var(--card) 25%, transparent 25%);
+    background-size: 16px 16px;
+  }
+</style>

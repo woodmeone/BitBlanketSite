@@ -1,0 +1,101 @@
+---
+const navItems = [
+  { path: '/', label: '首页' },
+  { path: '/blog', label: '博客' },
+  { path: '/todos', label: '待办' },
+  { path: '/community', label: '粉丝互动' },
+  { path: '/projects', label: 'AI项目' },
+  { path: '/software', label: '软件分享' },
+  { path: '/about', label: '关于' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50 bg-card/90 backdrop-blur-sm border-b-2 border-primary/20 shadow-lg">
+  <nav class="container mx-auto px-4 py-4">
+    <div class="flex items-center justify-between">
+      <a href="/" class="group">
+        <div class="bg-accent text-accent-foreground px-4 py-2 -rotate-1 shadow-md border-2 border-primary/30 transition-transform hover:rotate-[-3deg] hover:scale-105">
+          <h1 class="font-bold tracking-tight">比特毯子</h1>
+        </div>
+      </a>
+
+      <div class="hidden md:flex items-center gap-2">
+        {navItems.map((item, index) => {
+          const isActive = currentPath === item.path;
+          const rotation = (index % 3) - 1;
+          return (
+            <a href={item.path}>
+              <div 
+                class:list={[
+                  'nav-item',
+                  isActive ? 'nav-item-active' : 'nav-item-inactive'
+                ]}
+                style={`transform: rotate(${rotation}deg);`}
+              >
+                {item.label}
+              </div>
+            </a>
+          );
+        })}
+        
+        <button 
+          id="theme-toggle"
+          class="nav-item nav-item-inactive px-3"
+          aria-label="切换主题"
+        >
+          <svg class="w-4 h-4 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+          <svg class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <button 
+        id="mobile-menu-btn"
+        class="md:hidden nav-item nav-item-inactive px-3"
+        aria-label="菜单"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden mt-4 space-y-2">
+      {navItems.map((item) => {
+        const isActive = currentPath === item.path;
+        return (
+          <a href={item.path}>
+            <div 
+              class:list={[
+                'nav-item w-full text-left',
+                isActive ? 'nav-item-active' : 'nav-item-inactive'
+              ]}
+            >
+              {item.label}
+            </div>
+          </a>
+        );
+      })}
+    </div>
+  </nav>
+</header>
+
+<script>
+  const themeToggle = document.getElementById('theme-toggle');
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+
+  themeToggle?.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  });
+
+  mobileMenuBtn?.addEventListener('click', () => {
+    mobileMenu?.classList.toggle('hidden');
+  });
+</script>

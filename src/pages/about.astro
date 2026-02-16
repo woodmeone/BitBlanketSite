@@ -1,0 +1,147 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CollageCard from '../components/collage/CollageCard.astro';
+
+const skills = [
+  { name: 'TypeScript', level: 90 },
+  { name: 'Vue.js', level: 85 },
+  { name: 'React', level: 80 },
+  { name: 'Node.js', level: 75 },
+  { name: 'Python', level: 70 },
+  { name: 'AI/ML', level: 65 },
+];
+
+const timeline = [
+  {
+    date: '2024',
+    title: '开始自媒体创作',
+    description: '创建「比特毯子」品牌，专注软件分享和AI编程',
+    type: 'work',
+  },
+  {
+    date: '2023',
+    title: '深入学习AI编程',
+    description: '探索AI辅助开发的最佳实践',
+    type: 'learning',
+  },
+  {
+    date: '2022',
+    title: '成为全栈开发者',
+    description: '掌握前后端开发技术栈',
+    type: 'work',
+  },
+];
+
+const socialLinks = [
+  { name: 'GitHub', url: 'https://github.com', icon: 'code' },
+  { name: 'Bilibili', url: 'https://bilibili.com', icon: 'video' },
+  { name: 'Twitter', url: 'https://twitter.com', icon: 'message' },
+];
+---
+
+<BaseLayout title="关于">
+  <div class="space-y-8">
+    <section class="text-center py-8">
+      <CollageCard rotation={-0.5} class="inline-block px-8 py-4">
+        <h1 class="text-3xl md:text-4xl font-bold">关于我</h1>
+      </CollageCard>
+    </section>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      <CollageCard rotation={-1} class="p-6 md:col-span-1">
+        <div class="text-center">
+          <div class="w-24 h-24 mx-auto mb-4 bg-accent rounded-full flex items-center justify-center text-accent-foreground text-3xl font-bold">
+            毯
+          </div>
+          <h2 class="text-xl font-bold">比特毯子</h2>
+          <p class="text-muted-foreground text-sm mt-1">全栈开发者 / 自媒体创作者</p>
+          <div class="flex justify-center gap-3 mt-4">
+            {socialLinks.map((link) => (
+              <a
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-8 h-8 flex items-center justify-center border-2 border-primary/20 hover:border-primary/40 transition-colors"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+              </a>
+            ))}
+          </div>
+        </div>
+      </CollageCard>
+
+      <CollageCard rotation={0.5} class="p-6 md:col-span-2">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+          <div class="w-2 h-6 bg-accent" />
+          个人简介
+        </h2>
+        <p class="text-muted-foreground leading-relaxed">
+          你好！我是比特毯子，一个热爱技术和分享的开发者。
+        </p>
+        <p class="text-muted-foreground leading-relaxed mt-3">
+          我专注于软件分享、AI编程和学习记录。目前运营着一个3000+粉丝的自媒体账号，
+          致力于帮助更多人了解和使用优质软件工具，探索AI辅助开发的无限可能。
+        </p>
+        <p class="text-muted-foreground leading-relaxed mt-3">
+          这个网站是我的个人空间，记录学习过程，分享技术心得，也欢迎你来互动交流！
+        </p>
+      </CollageCard>
+    </div>
+
+    <CollageCard rotation={-0.3} class="p-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <div class="w-2 h-6 bg-accent" />
+        技能专长
+      </h2>
+      <div class="space-y-3">
+        {skills.map((skill) => (
+          <div>
+            <div class="flex justify-between text-sm mb-1">
+              <span>{skill.name}</span>
+              <span class="text-muted-foreground">{skill.level}%</span>
+            </div>
+            <div class="h-2 bg-secondary rounded-full overflow-hidden">
+              <div
+                class="h-full bg-accent transition-all duration-500"
+                style={`width: ${skill.level}%`}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </CollageCard>
+
+    <CollageCard rotation={0.5} class="p-6">
+      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+        <div class="w-2 h-6 bg-accent" />
+        时间线
+      </h2>
+      <div class="space-y-4">
+        {timeline.map((item, index) => (
+          <div class="flex gap-4">
+            <div class="flex flex-col items-center">
+              <div class="w-3 h-3 rounded-full bg-accent" />
+              {index < timeline.length - 1 && (
+                <div class="w-0.5 h-full bg-primary/20 mt-1" />
+              )}
+            </div>
+            <div class="pb-4">
+              <span class="text-xs text-muted-foreground">{item.date}</span>
+              <h3 class="font-medium">{item.title}</h3>
+              <p class="text-sm text-muted-foreground">{item.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </CollageCard>
+
+    <CollageCard rotation={-0.5} class="p-6 text-center bg-accent text-accent-foreground">
+      <h2 class="text-xl font-bold mb-2">第十九号底片</h2>
+      <p class="text-accent-foreground/90">
+        另一个关于摄影和创作故事的空间，敬请期待...
+      </p>
+    </CollageCard>
+  </div>
+</BaseLayout>

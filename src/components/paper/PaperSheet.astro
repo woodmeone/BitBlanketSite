@@ -1,0 +1,67 @@
+---
+export interface Props {
+  size?: 'a4' | 'letter' | 'square';
+  lined?: boolean;
+  aged?: boolean;
+  class?: string;
+}
+
+const { size = 'a4', lined = true, aged = false, class: className } = Astro.props;
+---
+
+<article class:list={[
+  'paper-sheet', 
+  `paper-sheet--${size}`, 
+  { 'paper-sheet--lined': lined }, 
+  { 'paper-sheet--aged': aged }, 
+  className
+]}>
+  <slot />
+</article>
+
+<style>
+  .paper-sheet {
+    background: var(--card);
+    position: relative;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+  }
+  
+  .paper-sheet::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: var(--paper-texture);
+    background-repeat: repeat;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  
+  .paper-sheet--lined {
+    background-image: linear-gradient(var(--muted-foreground) 1px, transparent 1px);
+    background-size: 100% 1.5rem;
+    background-position: 0 1.5rem;
+  }
+  
+  .paper-sheet--aged::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 30%, rgba(139, 90, 43, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(139, 90, 43, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  
+  .paper-sheet--a4 {
+    min-height: 400px;
+  }
+  
+  .paper-sheet--letter {
+    min-height: 350px;
+  }
+  
+  .paper-sheet--square {
+    aspect-ratio: 1;
+  }
+</style>

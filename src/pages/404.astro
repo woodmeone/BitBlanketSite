@@ -1,0 +1,42 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CollageCard from '../components/collage/CollageCard.astro';
+---
+
+<BaseLayout title="页面未找到">
+  <div class="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+    <CollageCard rotation={-2} class="px-12 py-8 text-center">
+      <div class="text-8xl font-bold text-accent mb-4">404</div>
+      <h1 class="text-2xl font-bold mb-2">页面走丢了</h1>
+      <p class="text-muted-foreground">
+        你访问的页面不存在或已被移动
+      </p>
+    </CollageCard>
+
+    <div class="flex gap-4">
+      <a href="/">
+        <CollageCard rotation={0.5} class="px-6 py-3 cursor-pointer bg-accent text-accent-foreground">
+          返回首页
+        </CollageCard>
+      </a>
+      <a href="/blog">
+        <CollageCard rotation={-0.5} class="px-6 py-3 cursor-pointer">
+          浏览博客
+        </CollageCard>
+      </a>
+    </div>
+
+    <CollageCard rotation={1} class="px-6 py-4 text-center max-w-md">
+      <p class="text-sm text-muted-foreground">
+        也许你想找的是：
+      </p>
+      <div class="flex flex-wrap gap-2 justify-center mt-3">
+        <a href="/projects" class="text-accent hover:underline">AI项目</a>
+        <span class="text-muted-foreground">•</span>
+        <a href="/software" class="text-accent hover:underline">软件分享</a>
+        <span class="text-muted-foreground">•</span>
+        <a href="/community" class="text-accent hover:underline">粉丝互动</a>
+      </div>
+    </CollageCard>
+  </div>
+</BaseLayout>
