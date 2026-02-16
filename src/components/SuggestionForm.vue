@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 
-const emit = defineEmits<{
-  (e: 'submit', data: { type: string; nickname: string; content: string }): void;
-  (e: 'close'): void;
-}>();
-
 const form = reactive({
   type: 'topic',
   nickname: '',
@@ -33,22 +28,36 @@ const handleSubmit = async () => {
   errorMessage.value = '';
   
   try {
-    emit('submit', {
-      type: form.type,
-      nickname: form.nickname.trim() || '匿名',
-      content: form.content.trim()
+    const response = await fetch('/api/suggestions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        type: form.type,
+        nickname: form.nickname.trim() || '匿名',
+        content: form.content.trim()
+      })
     });
     
-    submitStatus.value = 'success';
-    form.content = '';
-    form.nickname = '';
+    const result = await response.json();
     
-    setTimeout(() => {
-      emit('close');
-    }, 1500);
+    if (result.success) {
+      submitStatus.value = 'success';
+      form.content = '';
+      form.nickname = '';
+      
+      setTimeout(() => {
+        submitStatus.value = 'idle';
+        window.location.reload();
+      }, 1500);
+    } else {
+      submitStatus.value = 'error';
+      errorMessage.value = result.error || '提交失败，请稍后重试';
+    }
   } catch (error) {
     submitStatus.value = 'error';
-    errorMessage.value = '提交失败，请稍后重试';
+    errorMessage.value = '网络错误，请稍后重试';
   } finally {
     isSubmitting.value = false;
   }
@@ -100,23 +109,13 @@ const handleSubmit = async () => {
         {{ errorMessage }}
       </div>
       
-      <div class="flex gap-3">
-        <button
-          type="button"
-          @click="$emit('close')"
-          class="flex-1 nav-item nav-item-inactive text-center"
-          :disabled="isSubmitting"
-        >
-          取消
-        </button>
-        <button
-          type="submit"
-          class="flex-1 nav-item nav-item-active text-center"
-          :disabled="isSubmitting"
-        >
-          {{ isSubmitting ? '提交中...' : '提交建议' }}
-        </button>
-      </div>
+      <button
+        type="submit"
+        class="w-full nav-item nav-item-active text-center py-3"
+        :disabled="isSubmitting"
+      >
+        {{ isSubmitting ? '提交中...' : '提交建议' }}
+      </button>
     </form>
   </div>
 </template>

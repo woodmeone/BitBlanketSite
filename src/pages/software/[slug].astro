@@ -1,0 +1,113 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CollageCard from '../../components/collage/CollageCard.astro';
+import { getSoftwareBySlug } from '../../lib/data-service';
+import { marked } from 'marked';
+
+const { slug } = Astro.params;
+const item = await getSoftwareBySlug(Astro, slug || '');
+
+if (!item) {
+  return Astro.redirect('/software');
+}
+
+const platformIcons: Record<string, string> = {
+  windows: '🪟',
+  mac: '🍎',
+  linux: '🐧',
+  web: '🌐',
+};
+
+const platformList = (item.platform || '').split(',').filter(p => p.trim());
+const renderedContent = item.content ? await marked(item.content) : '';
+---
+
+<BaseLayout title={item.name} description={item.description || ''}>
+  <div class="max-w-4xl mx-auto space-y-8">
+    <section class="py-8">
+      <a href="/software" class="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-6">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        返回分享列表
+      </a>
+      
+      <CollageCard rotation={-0.3} class="p-6 md:p-8">
+        <div class="flex items-start justify-between mb-6">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-bold">{item.name}</h1>
+            <div class="flex items-center gap-3 mt-3">
+              {platformList.map((p) => (
+                <span class="text-xl" title={p}>{platformIcons[p] || '📦'}</span>
+              ))}
+              <span class="text-sm text-muted-foreground px-3 py-1 bg-secondary rounded">
+                {item.category || '其他'}
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <p class="text-lg text-muted-foreground mb-6">{item.description || ''}</p>
+        
+        {renderedContent && (
+          <div class="prose prose-slate dark:prose-invert max-w-none mb-6"
+            set:html={renderedContent}>
+          </div>
+        )}
+        
+        {item.hidden_content && (
+          <div class="border-2 border-yellow-200 dark:border-yellow-800 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 mb-6">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">🔒</span>
+              <span class="font-medium">隐藏内容</span>
+            </div>
+            <p class="text-sm whitespace-pre-wrap">{item.hidden_content}</p>
+          </div>
+        )}
+        
+        <div class="flex items-center justify-between pt-6 border-t border-primary/10">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-2 text-muted-foreground">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <span id="viewCount">{item.rating || 0}</span> 热度
+            </span>
+          </div>
+          
+          <div class="flex gap-3">
+            {item.website && (
+              <a href={item.website} target="_blank" rel="noopener noreferrer" 
+                class="nav-item nav-item-active px-4 py-2 text-sm inline-flex items-center gap-2"
+                id="visitLink">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                访问官网
+              </a>
+            )}
+          </div>
+        </div>
+      </CollageCard>
+    </section>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ item }}>
+  const softwareId = item.id;
+  
+  async function incrementViews() {
+    try {
+      await fetch('/api/software/view', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: softwareId })
+      });
+    } catch (e) {
+      console.error('Failed to increment views:', e);
+    }
+  }
+  
+  incrementViews();
+</script>

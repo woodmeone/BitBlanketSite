@@ -2,10 +2,12 @@ name = "bit-blanket"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "dist"
 
-[site]
-bucket = "./dist"
-
 [[d1_databases]]
 binding = "DB"
 database_name = "bit-blanket-db"
 database_id = "fbdbc85d-7f6c-4f2a-b8b4-c80953d20ff6"
+
+# SESSION KV 绑定（如果需要使用 Astro Sessions 功能，请取消注释并创建 KV namespace）
+# [[kv_namespaces]]
+# binding = "SESSION"
+# id = "your_kv_namespace_id"

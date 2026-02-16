@@ -143,15 +143,22 @@ const title = '编辑分享 - 比特毯子';
     e.preventDefault();
     
     const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+    
+    const name = (document.getElementById('name') as HTMLInputElement).value;
 
     const data = {
       id: parseInt((document.getElementById('id') as HTMLInputElement).value),
-      name: (document.getElementById('name') as HTMLInputElement).value,
+      slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u4e00-\u9fa5-]/g, ''),
+      name: name,
+      description: (document.getElementById('content') as HTMLTextAreaElement).value.substring(0, 200),
       content: (document.getElementById('content') as HTMLTextAreaElement).value,
       website: (document.getElementById('website') as HTMLInputElement).value,
       category: (document.getElementById('category') as HTMLInputElement).value,
+      platform: '',
       download_url: (document.getElementById('download_url') as HTMLInputElement).value,
       hidden_content: (document.getElementById('hidden_content') as HTMLTextAreaElement).value,
+      icon: '',
+      screenshots: '',
       published: (document.getElementById('published') as HTMLInputElement).checked
     };
 

@@ -194,20 +194,42 @@ class LocalDatabase implements D1Database {
       return { results: [], success: true, meta: { duration: 0, changes: 0, last_row_id: 0, rows_read: 0, rows_written: 0 } };
     }
     
-    const setColumns = setMatch[1].split(',').map(s => s.split('=')[0].trim());
+    const idParam = params[params.length - 1];
+    const idValue = typeof idParam === 'string' ? parseInt(idParam, 10) : idParam;
     
     const idIndex = table.findIndex(r => {
       if (sql.includes('WHERE id = ?') || sql.includes('WHERE id=?')) {
-        return r.id === params[params.length - 1];
+        return r.id === idValue || String(r.id) === String(idParam);
       }
       return false;
     });
     
     if (idIndex !== -1) {
-      setColumns.forEach((col, i) => {
-        table[idIndex][col] = params[i];
+      const setClause = setMatch[1];
+      const assignments = setClause.split(',').map(s => s.trim());
+      
+      let paramIndex = 0;
+      
+      assignments.forEach((assignment) => {
+        const colMatch = assignment.match(/^(\w+)\s*=\s*(.+)$/);
+        if (!colMatch) return;
+        
+        const col = colMatch[1];
+        const value = colMatch[2].trim();
+        
+        const incrementMatch = value.match(/^(\w+)\s*\+\s*\?$/);
+        if (incrementMatch && incrementMatch[1] === col) {
+          const increment = params[paramIndex];
+          table[idIndex][col] = ((table[idIndex][col] as number) || 0) + (typeof increment === 'number' ? increment : 1);
+          paramIndex++;
+        } else if (value === '?') {
+          table[idIndex][col] = params[paramIndex];
+          paramIndex++;
+        } else if (value.toUpperCase() === 'CURRENT_TIMESTAMP') {
+          table[idIndex][col] = new Date().toISOString();
+        }
       });
-      table[idIndex].updated_at = new Date().toISOString();
+      
       changes = 1;
     }
     
@@ -228,12 +250,15 @@ class LocalDatabase implements D1Database {
     let filtered = table;
     
     if (sql.includes('WHERE id = ?') || sql.includes('WHERE id=?')) {
-      const id = params[0];
-      filtered = table.filter(r => r.id !== id);
+      const idParam = params[0];
+      const idValue = typeof idParam === 'string' ? parseInt(idParam, 10) : idParam;
+      filtered = table.filter(r => r.id !== idValue && String(r.id) !== String(idParam));
     }
     
     if (sql.includes('WHERE suggestion_id = ?') || sql.includes('WHERE suggestion_id=?')) {
-      filtered = table.filter(r => r.suggestion_id !== params[0]);
+      const suggestionIdParam = params[0];
+      const suggestionIdValue = typeof suggestionIdParam === 'string' ? parseInt(suggestionIdParam, 10) : suggestionIdParam;
+      filtered = table.filter(r => r.suggestion_id !== suggestionIdValue && String(r.suggestion_id) !== String(suggestionIdParam));
     }
     
     this.tables.set(tableName, filtered);
@@ -283,7 +308,7 @@ function getLocalDB(): D1Database {
   return localDbInstance;
 }
 
-export function getDB(context: { locals?: any } | AstroGlobal | null | undefined): D1Database {
+export function getDB(context: { locals?: Record<string, unknown> } | AstroGlobal | null | undefined): D1Database {
   const runtime = context?.locals?.runtime;
   if (runtime?.env?.DB) {
     return runtime.env.DB;

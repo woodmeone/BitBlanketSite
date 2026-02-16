@@ -2,14 +2,8 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import CollageCard from '../../components/collage/CollageCard.astro';
 import Giscus from '../../components/Giscus.astro';
-import { getPostBySlug, getPublishedPosts, getAllPostSlugs } from '../../lib/data-service';
-
-export async function getStaticPaths() {
-  const slugs = await getAllPostSlugs(Astro);
-  return slugs.map(slug => ({
-    params: { slug },
-  }));
-}
+import { getPostBySlug, getPublishedPosts } from '../../lib/data-service';
+import { marked } from 'marked';
 
 const { slug } = Astro.params;
 const post = await getPostBySlug(Astro, slug || '');
@@ -32,6 +26,8 @@ const currentIndex = allPosts.findIndex(p => p.slug === slug);
 const prevPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
 const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 const tags = (post.tags || '').split(',').filter(t => t.trim());
+
+const renderedContent = post.content ? await marked(post.content) : '';
 ---
 
 <BaseLayout title={post.title} description={post.description || ''}>
@@ -66,7 +62,7 @@ const tags = (post.tags || '').split(',').filter(t => t.trim());
         prose-pre:bg-primary/5 prose-pre:border-2 prose-pre:border-primary/20
         prose-blockquote:border-l-accent prose-blockquote:bg-secondary/50 prose-blockquote:py-2 prose-blockquote:px-4
         prose-img:rounded-lg prose-img:border-2 prose-img:border-primary/20"
-        set:html={post.content || ''}>
+        set:html={renderedContent}>
       </div>
     </CollageCard>
 

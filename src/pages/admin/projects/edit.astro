@@ -137,15 +137,21 @@ const title = '编辑项目 - 比特毯子';
     e.preventDefault();
     
     const errorMsg = document.getElementById('errorMsg') as HTMLDivElement;
+    
+    const name = (document.getElementById('name') as HTMLInputElement).value;
 
     const data = {
       id: parseInt((document.getElementById('id') as HTMLInputElement).value),
-      name: (document.getElementById('name') as HTMLInputElement).value,
+      slug: name.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u4e00-\u9fa5-]/g, ''),
+      name: name,
+      description: (document.getElementById('content') as HTMLTextAreaElement).value.substring(0, 200),
       content: (document.getElementById('content') as HTMLTextAreaElement).value,
-      website: (document.getElementById('website') as HTMLInputElement).value,
       usage_scenario: (document.getElementById('usage_scenario') as HTMLTextAreaElement).value,
+      category: '',
       tags: (document.getElementById('tags') as HTMLInputElement).value,
+      website: (document.getElementById('website') as HTMLInputElement).value,
       github: (document.getElementById('github') as HTMLInputElement).value,
+      icon: '',
       status: (document.getElementById('status') as HTMLSelectElement).value,
       published: (document.getElementById('published') as HTMLInputElement).checked
     };

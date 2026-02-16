@@ -1,7 +1,15 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const JWT_SECRET = import.meta.env.JWT_SECRET || 'bit-blanket-jwt-secret-key-2026';
-const ADMIN_PASSWORD = import.meta.env.ADMIN_PASSWORD || '135792468Lzy';
+function getRequiredEnv(name: string): string {
+  const value = import.meta.env[name];
+  if (!value) {
+    throw new Error(`环境变量 ${name} 未设置，请检查 .env 文件或 Cloudflare 环境配置`);
+  }
+  return value;
+}
+
+const JWT_SECRET = getRequiredEnv('JWT_SECRET');
+const ADMIN_PASSWORD = getRequiredEnv('ADMIN_PASSWORD');
 
 const secretKey = new TextEncoder().encode(JWT_SECRET);
 

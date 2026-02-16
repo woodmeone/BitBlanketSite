@@ -139,9 +139,11 @@ const title = '编辑随笔 - 比特毯子';
     const data = {
       id: parseInt((document.getElementById('id') as HTMLInputElement).value),
       title: (document.getElementById('title') as HTMLInputElement).value,
-      slug: slug,
+      slug: slug || (document.getElementById('title') as HTMLInputElement).value.toLowerCase().replace(/\s+/g, '-').replace(/[^\w\u4e00-\u9fa5-]/g, ''),
+      description: (document.getElementById('content') as HTMLTextAreaElement).value.substring(0, 200),
       content: (document.getElementById('content') as HTMLTextAreaElement).value,
       tags: (document.getElementById('tags') as HTMLInputElement).value,
+      cover_image: '',
       published: (document.getElementById('published') as HTMLInputElement).checked
     };
 

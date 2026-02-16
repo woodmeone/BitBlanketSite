@@ -10,10 +10,16 @@ export default defineConfig({
   
   output: 'server',
   
+  server: {
+    port: 4321,
+    strictPort: true
+  },
+  
   adapter: cloudflare({
     platformProxy: {
       enabled: false
-    }
+    },
+    imageService: 'passthrough'
   }),
   
   integrations: [
