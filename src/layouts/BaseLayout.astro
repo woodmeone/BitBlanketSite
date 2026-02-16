@@ -58,6 +58,18 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         document.documentElement.classList.add('dark');
       }
     </script>
+    
+    <script>
+      import { initAllAnimations } from '../lib/animations';
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        initAllAnimations();
+      });
+      
+      document.addEventListener('astro:page-load', () => {
+        initAllAnimations();
+      });
+    </script>
   </head>
   <body class="min-h-screen flex flex-col relative">
     <Header />

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bit-blanket.com/sitemap-index.xml
+
+Disallow: /api/

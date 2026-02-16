@@ -1,0 +1,11 @@
+name = "bit-blanket"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "dist"
+
+[site]
+bucket = "./dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bit-blanket-db"
+database_id = "fbdbc85d-7f6c-4f2a-b8b4-c80953d20ff6"
