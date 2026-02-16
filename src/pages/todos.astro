@@ -1,26 +1,20 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
+import { getAllTodos } from '../lib/data-service';
 
-const todos = [
-  { id: 1, title: '完成网站基础架构', status: 'done', priority: 'high', category: '开发' },
-  { id: 2, title: '实现博客系统', status: 'done', priority: 'high', category: '开发' },
-  { id: 3, title: '开发粉丝互动功能', status: 'doing', priority: 'high', category: '开发' },
-  { id: 4, title: '集成Notion待办同步', status: 'doing', priority: 'medium', category: '集成' },
-  { id: 5, title: '添加GSAP动画效果', status: 'pending', priority: 'low', category: '优化' },
-  { id: 6, title: '部署到Cloudflare Pages', status: 'pending', priority: 'high', category: '部署' },
-];
+const todos = await getAllTodos(Astro);
 
 const statusColors: Record<string, string> = {
-  done: '#22c55e',
-  doing: '#f59e0b',
+  completed: '#22c55e',
+  in_progress: '#f59e0b',
   pending: '#6b7280',
 };
 
 const statusLabels: Record<string, string> = {
-  done: '已完成',
-  doing: '进行中',
-  pending: '待开始',
+  completed: '已完成',
+  in_progress: '进行中',
+  pending: '准备中',
 };
 
 const priorityLabels: Record<string, string> = {
@@ -29,9 +23,21 @@ const priorityLabels: Record<string, string> = {
   low: '低',
 };
 
-const doneCount = todos.filter(t => t.status === 'done').length;
-const doingCount = todos.filter(t => t.status === 'doing').length;
+const doneCount = todos.filter(t => t.status === 'completed').length;
+const doingCount = todos.filter(t => t.status === 'in_progress').length;
 const pendingCount = todos.filter(t => t.status === 'pending').length;
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
 ---
 
 <BaseLayout title="待办事项">
@@ -53,7 +59,7 @@ const pendingCount = todos.filter(t => t.status === 'pending').length;
         </h2>
         <div class="flex items-center gap-2 text-sm text-muted-foreground">
           <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          <span>Notion 同步</span>
+          <span>数据库同步</span>
         </div>
       </div>
       
@@ -68,18 +74,18 @@ const pendingCount = todos.filter(t => t.status === 'pending').length;
         </div>
         <div class="text-center">
           <div class="text-4xl font-bold text-gray-500">{pendingCount}</div>
-          <div class="text-sm text-muted-foreground">待开始</div>
+          <div class="text-sm text-muted-foreground">准备中</div>
         </div>
       </div>
       
       <div class="h-3 bg-secondary rounded-full overflow-hidden">
         <div 
           class="h-full bg-gradient-to-r from-green-500 to-accent transition-all duration-500"
-          style={`width: ${(doneCount / todos.length) * 100}%`}
+          style={`width: ${todos.length > 0 ? (doneCount / todos.length) * 100 : 0}%`}
         />
       </div>
       <p class="text-center text-sm text-muted-foreground mt-2">
-        总体进度：{Math.round((doneCount / todos.length) * 100)}%
+        总体进度：{todos.length > 0 ? Math.round((doneCount / todos.length) * 100) : 0}%
       </p>
     </CollageCard>
 
@@ -91,30 +97,37 @@ const pendingCount = todos.filter(t => t.status === 'pending').length;
       
       {todos.map((todo, index) => {
         const rotation = ((index % 2) - 0.5) * 1;
+        const priority = String(todo.priority || 0);
+        const priorityText = priority === '1' || priority === 'high' ? 'high' : priority === '0' || priority === 'low' ? 'low' : 'medium';
         return (
           <CollageCard rotation={rotation} class="p-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
               <div
                 class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
                 style={{
-                  borderColor: statusColors[todo.status],
-                  backgroundColor: todo.status === 'done' ? statusColors[todo.status] : 'transparent',
+                  borderColor: statusColors[todo.status] || statusColors.pending,
+                  backgroundColor: todo.status === 'completed' ? statusColors[todo.status] : 'transparent',
                 }}
               >
-                {todo.status === 'done' && (
+                {todo.status === 'completed' && (
                   <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                   </svg>
                 )}
               </div>
               <div>
-                <span class:list={[todo.status === 'done' && 'line-through text-muted-foreground', 'font-medium']}>
+                <span class:list={[todo.status === 'completed' && 'line-through text-muted-foreground', 'font-medium']}>
                   {todo.title}
                 </span>
+                {todo.description && (
+                  <p class="text-xs text-muted-foreground mt-1">{todo.description}</p>
+                )}
                 <div class="flex items-center gap-2 mt-1">
-                  <span class="text-xs px-2 py-0.5 bg-secondary">{todo.category}</span>
-                  <span class:list={['text-xs', todo.priority === 'high' ? 'text-red-500' : todo.priority === 'medium' ? 'text-amber-500' : 'text-gray-400']}>
-                    {priorityLabels[todo.priority]}优先级
+                  {todo.category && (
+                    <span class="text-xs px-2 py-0.5 bg-secondary">{todo.category}</span>
+                  )}
+                  <span class:list={['text-xs', priorityText === 'high' ? 'text-red-500' : priorityText === 'medium' ? 'text-amber-500' : 'text-gray-400']}>
+                    {priorityLabels[priorityText]}优先级
                   </span>
                 </div>
               </div>
@@ -122,16 +135,24 @@ const pendingCount = todos.filter(t => t.status === 'pending').length;
             <span
               class="px-3 py-1 text-xs border-2"
               style={{ 
-                borderColor: statusColors[todo.status],
-                color: statusColors[todo.status]
+                borderColor: statusColors[todo.status] || statusColors.pending,
+                color: statusColors[todo.status] || statusColors.pending
               }}
             >
-              {statusLabels[todo.status]}
+              {statusLabels[todo.status] || todo.status}
             </span>
           </CollageCard>
         );
       })}
     </section>
+
+    {todos.length === 0 && (
+      <section class="text-center text-muted-foreground">
+        <CollageCard rotation={0} class="inline-block px-8 py-4">
+          <p>暂无待办事项</p>
+        </CollageCard>
+      </section>
+    )}
 
     <CollageCard rotation={-0.5} class="p-6 text-center bg-secondary/50">
       <div class="flex items-center justify-center gap-2 mb-2">
@@ -140,9 +161,9 @@ const pendingCount = todos.filter(t => t.status === 'pending').length;
         </svg>
         <span class="text-muted-foreground">数据来源</span>
       </div>
-      <p class="font-medium">Notion 同步</p>
+      <p class="font-medium">数据库同步</p>
       <p class="text-xs text-muted-foreground mt-2">
-        最后更新：2026-02-16 12:00
+        最后更新：{formatDate(new Date().toISOString())}
       </p>
     </CollageCard>
   </div>

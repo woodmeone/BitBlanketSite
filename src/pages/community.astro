@@ -3,36 +3,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
 import SuggestionForm from '../components/SuggestionForm.vue';
 import VoteButton from '../components/VoteButton.vue';
+import { getPublicSuggestions } from '../lib/data-service';
 
-const sampleSuggestions = [
-  {
-    id: 1,
-    type: 'topic',
-    nickname: '小明',
-    content: '希望出更多AI编程教程',
-    status: 'approved',
-    votes: 12,
-    createdAt: '2026-02-13'
-  },
-  {
-    id: 2,
-    type: 'article',
-    nickname: '匿名',
-    content: '可以分享一下你的开发工具吗',
-    status: 'approved',
-    votes: 8,
-    createdAt: '2026-02-11'
-  },
-  {
-    id: 3,
-    type: 'topic',
-    nickname: '学习者',
-    content: '想看关于效率提升的内容',
-    status: 'approved',
-    votes: 5,
-    createdAt: '2026-02-09'
-  }
-];
+const suggestions = await getPublicSuggestions(Astro);
 
 const typeLabels: Record<string, string> = {
   topic: '选题建议',
@@ -47,6 +20,17 @@ const statusLabels: Record<string, string> = {
   in_progress: '进行中',
   completed: '已完成',
   rejected: '已拒绝'
+};
+
+const pendingCount = suggestions.filter(s => s.status === 'pending').length;
+const approvedCount = suggestions.filter(s => s.status === 'approved').length;
+const inProgressCount = suggestions.filter(s => s.status === 'in_progress').length;
+const completedCount = suggestions.filter(s => s.status === 'completed').length;
+
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('zh-CN');
 };
 ---
 
@@ -76,22 +60,34 @@ const statusLabels: Record<string, string> = {
           热门建议
         </h2>
         <div class="space-y-3" id="suggestions-list">
-          {sampleSuggestions.map((suggestion) => (
+          {suggestions.map((suggestion) => (
             <div class="p-3 border-2 border-primary/20 flex items-center justify-between">
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="px-2 py-0.5 text-xs bg-secondary">{typeLabels[suggestion.type]}</span>
-                  <span class="text-xs text-muted-foreground">来自：{suggestion.nickname}</span>
+                  <span class="px-2 py-0.5 text-xs bg-secondary">{typeLabels[suggestion.type] || suggestion.type}</span>
+                  <span class="text-xs text-muted-foreground">来自：{suggestion.nickname || '匿名'}</span>
+                  <span class="text-xs text-muted-foreground">{formatDate(suggestion.created_at)}</span>
                 </div>
                 <p class="font-medium truncate">{suggestion.content}</p>
+                {suggestion.reply && (
+                  <div class="mt-2 p-2 bg-indigo-50 dark:bg-indigo-900/20 border-l-2 border-indigo-500 text-xs text-muted-foreground">
+                    <span class="font-medium">回复：</span>{suggestion.reply}
+                  </div>
+                )}
               </div>
               <VoteButton 
                 client:load 
                 suggestionId={suggestion.id} 
-                initialVotes={suggestion.votes} 
+                initialVotes={suggestion.votes || 0} 
               />
             </div>
           ))}
+          
+          {suggestions.length === 0 && (
+            <div class="text-center text-muted-foreground py-4">
+              暂无建议，快来提交第一条吧！
+            </div>
+          )}
         </div>
       </CollageCard>
     </div>
@@ -103,23 +99,23 @@ const statusLabels: Record<string, string> = {
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
         <div class="p-4 border-2 border-primary/20">
-          <div class="text-2xl font-bold">15</div>
+          <div class="text-2xl font-bold">{pendingCount}</div>
           <div class="text-sm text-muted-foreground">待审核</div>
         </div>
         <div class="p-4 border-2 border-primary/20">
-          <div class="text-2xl font-bold text-green-500">8</div>
+          <div class="text-2xl font-bold text-green-500">{approvedCount}</div>
           <div class="text-sm text-muted-foreground">已采纳</div>
         </div>
         <div class="p-4 border-2 border-primary/20">
-          <div class="text-2xl font-bold text-amber-500">3</div>
+          <div class="text-2xl font-bold text-amber-500">{inProgressCount}</div>
           <div class="text-sm text-muted-foreground">进行中</div>
         </div>
         <div class="p-4 border-2 border-primary/20">
-          <div class="text-2xl font-bold text-blue-500">5</div>
+          <div class="text-2xl font-bold text-blue-500">{completedCount}</div>
           <div class="text-sm text-muted-foreground">已完成</div>
         </div>
         <div class="p-4 border-2 border-primary/20">
-          <div class="text-2xl font-bold text-accent">31</div>
+          <div class="text-2xl font-bold text-accent">{suggestions.length}</div>
           <div class="text-sm text-muted-foreground">总建议</div>
         </div>
       </div>
