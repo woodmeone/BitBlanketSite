@@ -16,31 +16,56 @@ const formatDate = (date: Date) => {
     day: 'numeric'
   });
 };
+
+const postsData = posts.map(post => ({
+  slug: post.slug,
+  title: post.data.title,
+  description: post.data.description,
+  pubDate: post.data.pubDate.toISOString(),
+  tags: post.data.tags,
+  featured: post.data.featured
+}));
 ---
 
-<BaseLayout title="博客">
+<BaseLayout title="随笔">
   <div class="space-y-8">
     <section class="text-center py-8">
       <CollageCard rotation={-0.5} class="inline-block px-8 py-4">
-        <h1 class="text-3xl md:text-4xl font-bold">博客文章</h1>
+        <h1 class="text-3xl md:text-4xl font-bold">随笔</h1>
       </CollageCard>
       <p class="text-muted-foreground mt-4 max-w-2xl mx-auto">
         记录学习过程，分享技术心得
       </p>
     </section>
 
-    <section class="flex flex-wrap gap-2 justify-center">
-      <button class="nav-item nav-item-active">全部</button>
-      {allTags.slice(0, 5).map((tag) => (
-        <button class="nav-item nav-item-inactive">{tag}</button>
+    <section class="max-w-xl mx-auto">
+      <CollageCard rotation={0.3} class="p-4">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="search-input"
+            placeholder="搜索随笔..."
+            class="w-full px-4 py-2 pl-10 border-2 border-primary/20 bg-input-background focus:border-primary/40 outline-none"
+          />
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </CollageCard>
+    </section>
+
+    <section class="flex flex-wrap gap-2 justify-center" id="tags-container">
+      <button class="nav-item nav-item-active tag-btn" data-tag="all">全部</button>
+      {allTags.map((tag) => (
+        <button class="nav-item nav-item-inactive tag-btn" data-tag={tag}>{tag}</button>
       ))}
     </section>
 
-    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="posts-container">
       {posts.map((post, index) => {
         const rotation = ((index % 3) - 1) * 0.8;
         return (
-          <a href={`/blog/${post.slug}`}>
+          <a href={`/blog/${post.slug}`} class="post-card" data-title={post.data.title} data-description={post.data.description} data-tags={post.data.tags.join(',')}>
             <CollageCard rotation={rotation} class:list={['p-6 h-full cursor-pointer', post.data.featured && 'border-accent/50']}>
               {post.data.featured && (
                 <span class="inline-block px-2 py-1 text-xs bg-accent text-accent-foreground mb-3">
@@ -63,10 +88,68 @@ const formatDate = (date: Date) => {
       })}
     </section>
 
-    <section class="flex justify-center gap-4">
-      <button class="nav-item nav-item-inactive">上一页</button>
-      <span class="nav-item bg-card">1 / 1</span>
-      <button class="nav-item nav-item-inactive">下一页</button>
+    <section class="text-center text-muted-foreground" id="no-results" style="display: none;">
+      <CollageCard rotation={0} class="inline-block px-8 py-4">
+        <p>没有找到匹配的随笔</p>
+      </CollageCard>
     </section>
   </div>
 </BaseLayout>
+
+<script define:vars={{ postsData }}>
+  const posts = postsData;
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input');
+    const postsContainer = document.getElementById('posts-container');
+    const noResults = document.getElementById('no-results');
+    const tagButtons = document.querySelectorAll('.tag-btn');
+    
+    let currentTag = 'all';
+    let currentSearch = '';
+    
+    function filterPosts() {
+      const postCards = postsContainer.querySelectorAll('.post-card');
+      let visibleCount = 0;
+      
+      postCards.forEach((card, index) => {
+        const title = card.dataset.title.toLowerCase();
+        const description = card.dataset.description.toLowerCase();
+        const tags = card.dataset.tags.split(',');
+        const searchLower = currentSearch.toLowerCase();
+        
+        const matchesSearch = !currentSearch || 
+          title.includes(searchLower) || 
+          description.includes(searchLower);
+        
+        const matchesTag = currentTag === 'all' || tags.includes(currentTag);
+        
+        const shouldShow = matchesSearch && matchesTag;
+        card.style.display = shouldShow ? '' : 'none';
+        
+        if (shouldShow) visibleCount++;
+      });
+      
+      noResults.style.display = visibleCount === 0 ? '' : 'none';
+    }
+    
+    searchInput?.addEventListener('input', (e) => {
+      currentSearch = e.target.value;
+      filterPosts();
+    });
+    
+    tagButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tagButtons.forEach(b => {
+          b.classList.remove('nav-item-active');
+          b.classList.add('nav-item-inactive');
+        });
+        btn.classList.remove('nav-item-inactive');
+        btn.classList.add('nav-item-active');
+        
+        currentTag = btn.dataset.tag;
+        filterPosts();
+      });
+    });
+  });
+</script>

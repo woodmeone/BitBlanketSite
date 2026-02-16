@@ -19,68 +19,110 @@ const platformIcons: Record<string, string> = {
   linux: '🐧',
   web: '🌐',
 };
+
+const softwareData = software.map(item => ({
+  id: item.id,
+  name: item.data.name,
+  version: item.data.version,
+  description: item.data.description,
+  platform: item.data.platform,
+  category: item.data.category,
+  downloadUrl: item.data.downloadUrl,
+  websiteUrl: item.data.websiteUrl,
+  tags: item.data.tags
+}));
 ---
 
-<BaseLayout title="软件分享">
+<BaseLayout title="分享">
   <div class="space-y-8">
     <section class="text-center py-8">
       <CollageCard rotation={-0.5} class="inline-block px-8 py-4">
-        <h1 class="text-3xl md:text-4xl font-bold">软件分享</h1>
+        <h1 class="text-3xl md:text-4xl font-bold">分享</h1>
       </CollageCard>
       <p class="text-muted-foreground mt-4 max-w-2xl mx-auto">
         精选实用软件工具，提升你的工作效率
       </p>
     </section>
 
-    <section class="flex flex-wrap gap-2 justify-center">
+    <section class="max-w-xl mx-auto">
+      <CollageCard rotation={0.3} class="p-4">
+        <div class="relative">
+          <input 
+            type="text" 
+            id="search-input"
+            placeholder="搜索软件..."
+            class="w-full px-4 py-2 pl-10 border-2 border-primary/20 bg-input-background focus:border-primary/40 outline-none"
+          />
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </CollageCard>
+    </section>
+
+    <section class="flex flex-wrap gap-2 justify-center" id="platforms-container">
       {platforms.map((platform, index) => (
-        <button class:list={['nav-item', index === 0 ? 'nav-item-active' : 'nav-item-inactive']}>
+        <button class:list={['nav-item platform-btn', index === 0 ? 'nav-item-active' : 'nav-item-inactive']} data-platform={platform.id}>
           {platform.label}
         </button>
       ))}
     </section>
 
-    <section class="grid md:grid-cols-2 gap-6">
+    <section class="grid md:grid-cols-2 gap-6" id="software-container">
       {software.map((item, index) => {
         const rotation = ((index % 2) - 0.5) * 1.2;
         return (
-          <CollageCard rotation={rotation} class="p-6 cursor-pointer">
-            <div class="flex items-start justify-between mb-3">
-              <div>
-                <h2 class="text-xl font-bold">{item.data.name}</h2>
-                <span class="text-xs text-muted-foreground">v{item.data.version}</span>
+          <div 
+            class="software-card" 
+            data-name={item.data.name}
+            data-description={item.data.description}
+            data-platform={item.data.platform.join(',')}
+            data-category={item.data.category}
+          >
+            <CollageCard rotation={rotation} class="p-6 cursor-pointer">
+              <div class="flex items-start justify-between mb-3">
+                <div>
+                  <h2 class="text-xl font-bold">{item.data.name}</h2>
+                  <span class="text-xs text-muted-foreground">v{item.data.version}</span>
+                </div>
+                <div class="flex gap-1">
+                  {item.data.platform.map((p) => (
+                    <span class="text-lg" title={p}>{platformIcons[p]}</span>
+                  ))}
+                </div>
               </div>
-              <div class="flex gap-1">
-                {item.data.platform.map((p) => (
-                  <span class="text-lg" title={p}>{platformIcons[p]}</span>
-                ))}
+              <p class="text-muted-foreground text-sm mb-4">{item.data.description}</p>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-muted-foreground">
+                  {item.data.category === 'development' ? '开发工具' :
+                   item.data.category === 'utility' ? '效率工具' :
+                   item.data.category === 'design' ? '设计工具' : '媒体工具'}
+                </span>
+                {item.data.downloadUrl && (
+                  <a href={item.data.downloadUrl} target="_blank" rel="noopener noreferrer">
+                    <button class="nav-item nav-item-active text-sm px-3 py-1">
+                      下载
+                    </button>
+                  </a>
+                )}
+                {item.data.websiteUrl && !item.data.downloadUrl && (
+                  <a href={item.data.websiteUrl} target="_blank" rel="noopener noreferrer">
+                    <button class="nav-item nav-item-inactive text-sm px-3 py-1">
+                      访问
+                    </button>
+                  </a>
+                )}
               </div>
-            </div>
-            <p class="text-muted-foreground text-sm mb-4">{item.data.description}</p>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-muted-foreground">
-                {item.data.category === 'development' ? '开发工具' :
-                 item.data.category === 'utility' ? '效率工具' :
-                 item.data.category === 'design' ? '设计工具' : '媒体工具'}
-              </span>
-              {item.data.downloadUrl && (
-                <a href={item.data.downloadUrl} target="_blank" rel="noopener noreferrer">
-                  <button class="nav-item nav-item-active text-sm px-3 py-1">
-                    下载
-                  </button>
-                </a>
-              )}
-              {item.data.websiteUrl && !item.data.downloadUrl && (
-                <a href={item.data.websiteUrl} target="_blank" rel="noopener noreferrer">
-                  <button class="nav-item nav-item-inactive text-sm px-3 py-1">
-                    访问
-                  </button>
-                </a>
-              )}
-            </div>
-          </CollageCard>
+            </CollageCard>
+          </div>
         );
       })}
+    </section>
+
+    <section class="text-center text-muted-foreground" id="no-results" style="display: none;">
+      <CollageCard rotation={0} class="inline-block px-8 py-4">
+        <p>没有找到匹配的软件</p>
+      </CollageCard>
     </section>
 
     <CollageCard rotation={-0.3} class="p-6">
@@ -89,22 +131,22 @@ const platformIcons: Record<string, string> = {
         分类浏览
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors category-btn" data-category="development">
           <div class="text-2xl mb-2">💻</div>
           <p class="font-medium">开发工具</p>
           <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'development').length} 款</p>
         </div>
-        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors category-btn" data-category="utility">
           <div class="text-2xl mb-2">⚡</div>
           <p class="font-medium">效率工具</p>
           <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'utility').length} 款</p>
         </div>
-        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors category-btn" data-category="design">
           <div class="text-2xl mb-2">🎨</div>
           <p class="font-medium">设计工具</p>
           <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'design').length} 款</p>
         </div>
-        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors category-btn" data-category="media">
           <div class="text-2xl mb-2">🎬</div>
           <p class="font-medium">媒体工具</p>
           <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'media').length} 款</p>
@@ -113,3 +155,83 @@ const platformIcons: Record<string, string> = {
     </CollageCard>
   </div>
 </BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const softwareContainer = document.getElementById('software-container');
+    const noResults = document.getElementById('no-results');
+    const platformButtons = document.querySelectorAll('.platform-btn');
+    const categoryButtons = document.querySelectorAll('.category-btn');
+    
+    let currentPlatform = 'all';
+    let currentCategory = 'all';
+    let currentSearch = '';
+    
+    function filterSoftware() {
+      const softwareCards = softwareContainer?.querySelectorAll('.software-card');
+      let visibleCount = 0;
+      
+      softwareCards?.forEach((card) => {
+        const el = card as HTMLElement;
+        const name = el.dataset.name?.toLowerCase() || '';
+        const description = el.dataset.description?.toLowerCase() || '';
+        const platforms = el.dataset.platform?.split(',') || [];
+        const category = el.dataset.category || '';
+        const searchLower = currentSearch.toLowerCase();
+        
+        const matchesSearch = !currentSearch || 
+          name.includes(searchLower) || 
+          description.includes(searchLower);
+        
+        const matchesPlatform = currentPlatform === 'all' || platforms.includes(currentPlatform);
+        const matchesCategory = currentCategory === 'all' || category === currentCategory;
+        
+        const shouldShow = matchesSearch && matchesPlatform && matchesCategory;
+        el.style.display = shouldShow ? '' : 'none';
+        
+        if (shouldShow) visibleCount++;
+      });
+      
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? '' : 'none';
+      }
+    }
+    
+    searchInput?.addEventListener('input', (e) => {
+      currentSearch = (e.target as HTMLInputElement).value;
+      filterSoftware();
+    });
+    
+    platformButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        platformButtons.forEach(b => {
+          b.classList.remove('nav-item-active');
+          b.classList.add('nav-item-inactive');
+        });
+        btn.classList.remove('nav-item-inactive');
+        btn.classList.add('nav-item-active');
+        
+        currentPlatform = (btn as HTMLElement).dataset.platform || 'all';
+        currentCategory = 'all';
+        filterSoftware();
+      });
+    });
+    
+    categoryButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentCategory = (btn as HTMLElement).dataset.category || 'all';
+        currentPlatform = 'all';
+        
+        platformButtons.forEach(b => {
+          b.classList.remove('nav-item-active');
+          b.classList.add('nav-item-inactive');
+        });
+        platformButtons[0].classList.remove('nav-item-inactive');
+        platformButtons[0].classList.add('nav-item-active');
+        
+        filterSoftware();
+      });
+    });
+  });
+</script>
