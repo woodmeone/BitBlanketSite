@@ -1,6 +1,53 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
+import SuggestionForm from '../components/SuggestionForm.vue';
+import VoteButton from '../components/VoteButton.vue';
+
+const sampleSuggestions = [
+  {
+    id: 1,
+    type: 'topic',
+    nickname: '小明',
+    content: '希望出更多AI编程教程',
+    status: 'approved',
+    votes: 12,
+    createdAt: '2026-02-13'
+  },
+  {
+    id: 2,
+    type: 'article',
+    nickname: '匿名',
+    content: '可以分享一下你的开发工具吗',
+    status: 'approved',
+    votes: 8,
+    createdAt: '2026-02-11'
+  },
+  {
+    id: 3,
+    type: 'topic',
+    nickname: '学习者',
+    content: '想看关于效率提升的内容',
+    status: 'approved',
+    votes: 5,
+    createdAt: '2026-02-09'
+  }
+];
+
+const typeLabels: Record<string, string> = {
+  topic: '选题建议',
+  article: '文章建议',
+  project: '项目建议',
+  other: '其他'
+};
+
+const statusLabels: Record<string, string> = {
+  pending: '待审核',
+  approved: '已采纳',
+  in_progress: '进行中',
+  completed: '已完成',
+  rejected: '已拒绝'
+};
 ---
 
 <BaseLayout title="粉丝互动">
@@ -20,36 +67,7 @@ import CollageCard from '../components/collage/CollageCard.astro';
           <div class="w-2 h-6 bg-accent" />
           提交建议
         </h2>
-        <form class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium mb-1">建议类型</label>
-            <select class="w-full p-2 border-2 border-primary/20 bg-input-background focus:border-primary/40 outline-none">
-              <option value="topic">选题建议</option>
-              <option value="article">文章建议</option>
-              <option value="project">项目建议</option>
-              <option value="other">其他</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">你的昵称</label>
-            <input
-              type="text"
-              placeholder="匿名"
-              class="w-full p-2 border-2 border-primary/20 bg-input-background focus:border-primary/40 outline-none"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">建议内容 *</label>
-            <textarea
-              rows={4}
-              placeholder="请详细描述你的建议..."
-              class="w-full p-2 border-2 border-primary/20 bg-input-background focus:border-primary/40 outline-none resize-none"
-            ></textarea>
-          </div>
-          <button type="submit" class="nav-item nav-item-active w-full">
-            提交建议
-          </button>
-        </form>
+        <SuggestionForm client:load />
       </CollageCard>
 
       <CollageCard rotation={0.8} class="p-6">
@@ -57,47 +75,33 @@ import CollageCard from '../components/collage/CollageCard.astro';
           <div class="w-2 h-6 bg-accent" />
           热门建议
         </h2>
-        <div class="space-y-3">
-          <div class="p-3 border-2 border-primary/20 flex items-center justify-between">
-            <div>
-              <p class="font-medium">希望出更多AI编程教程</p>
-              <p class="text-xs text-muted-foreground">来自：小明 · 3天前</p>
+        <div class="space-y-3" id="suggestions-list">
+          {sampleSuggestions.map((suggestion) => (
+            <div class="p-3 border-2 border-primary/20 flex items-center justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="px-2 py-0.5 text-xs bg-secondary">{typeLabels[suggestion.type]}</span>
+                  <span class="text-xs text-muted-foreground">来自：{suggestion.nickname}</span>
+                </div>
+                <p class="font-medium truncate">{suggestion.content}</p>
+              </div>
+              <VoteButton 
+                client:load 
+                suggestionId={suggestion.id} 
+                initialVotes={suggestion.votes} 
+              />
             </div>
-            <button class="flex items-center gap-1 px-3 py-1 bg-accent text-accent-foreground">
-              <span>👍</span>
-              <span>12</span>
-            </button>
-          </div>
-          <div class="p-3 border-2 border-primary/20 flex items-center justify-between">
-            <div>
-              <p class="font-medium">可以分享一下你的开发工具吗</p>
-              <p class="text-xs text-muted-foreground">来自：匿名 · 5天前</p>
-            </div>
-            <button class="flex items-center gap-1 px-3 py-1 border-2 border-primary/20">
-              <span>👍</span>
-              <span>8</span>
-            </button>
-          </div>
-          <div class="p-3 border-2 border-primary/20 flex items-center justify-between">
-            <div>
-              <p class="font-medium">想看关于效率提升的内容</p>
-              <p class="text-xs text-muted-foreground">来自：学习者 · 1周前</p>
-            </div>
-            <button class="flex items-center gap-1 px-3 py-1 border-2 border-primary/20">
-              <span>👍</span>
-              <span>5</span>
-            </button>
-          </div>
+          ))}
         </div>
       </CollageCard>
     </div>
 
-    <CollageCard rotation={0.3} class="p-6">
+    <CollageCard rotation={-0.3} class="p-6">
       <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
         <div class="w-2 h-6 bg-accent" />
         建议状态
       </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
         <div class="p-4 border-2 border-primary/20">
           <div class="text-2xl font-bold">15</div>
           <div class="text-sm text-muted-foreground">待审核</div>
@@ -114,7 +118,32 @@ import CollageCard from '../components/collage/CollageCard.astro';
           <div class="text-2xl font-bold text-blue-500">5</div>
           <div class="text-sm text-muted-foreground">已完成</div>
         </div>
+        <div class="p-4 border-2 border-primary/20">
+          <div class="text-2xl font-bold text-accent">31</div>
+          <div class="text-sm text-muted-foreground">总建议</div>
+        </div>
       </div>
+    </CollageCard>
+
+    <CollageCard rotation={0.5} class="p-6 text-center bg-accent text-accent-foreground">
+      <h2 class="text-xl font-bold mb-2">感谢你的参与！</h2>
+      <p class="text-accent-foreground/90">
+        每一条建议我都会认真阅读，期待与你一起成长
+      </p>
     </CollageCard>
   </div>
 </BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const suggestionsList = document.getElementById('suggestions-list');
+    
+    const stored = localStorage.getItem('bit-blanket-suggestions');
+    if (stored) {
+      const suggestions = JSON.parse(stored);
+      if (suggestions.length > 0) {
+        console.log('已加载用户建议:', suggestions.length, '条');
+      }
+    }
+  });
+</script>

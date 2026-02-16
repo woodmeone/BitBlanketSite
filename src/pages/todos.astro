@@ -3,11 +3,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
 
 const todos = [
-  { title: '完成网站基础架构', status: 'done', priority: 'high' },
-  { title: '实现博客系统', status: 'doing', priority: 'high' },
-  { title: '开发粉丝互动功能', status: 'pending', priority: 'medium' },
-  { title: '集成Notion待办同步', status: 'pending', priority: 'medium' },
-  { title: '添加GSAP动画效果', status: 'pending', priority: 'low' },
+  { id: 1, title: '完成网站基础架构', status: 'done', priority: 'high', category: '开发' },
+  { id: 2, title: '实现博客系统', status: 'done', priority: 'high', category: '开发' },
+  { id: 3, title: '开发粉丝互动功能', status: 'doing', priority: 'high', category: '开发' },
+  { id: 4, title: '集成Notion待办同步', status: 'doing', priority: 'medium', category: '集成' },
+  { id: 5, title: '添加GSAP动画效果', status: 'pending', priority: 'low', category: '优化' },
+  { id: 6, title: '部署到Cloudflare Pages', status: 'pending', priority: 'high', category: '部署' },
 ];
 
 const statusColors: Record<string, string> = {
@@ -21,6 +22,16 @@ const statusLabels: Record<string, string> = {
   doing: '进行中',
   pending: '待开始',
 };
+
+const priorityLabels: Record<string, string> = {
+  high: '高',
+  medium: '中',
+  low: '低',
+};
+
+const doneCount = todos.filter(t => t.status === 'done').length;
+const doingCount = todos.filter(t => t.status === 'doing').length;
+const pendingCount = todos.filter(t => t.status === 'pending').length;
 ---
 
 <BaseLayout title="待办事项">
@@ -35,46 +46,85 @@ const statusLabels: Record<string, string> = {
     </section>
 
     <CollageCard rotation={0.3} class="p-6">
-      <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-        <div class="w-2 h-6 bg-accent" />
-        当前进度
-      </h2>
-      <div class="flex gap-4 justify-center">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold flex items-center gap-2">
+          <div class="w-2 h-6 bg-accent" />
+          当前进度
+        </h2>
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+          <span>Notion 同步</span>
+        </div>
+      </div>
+      
+      <div class="flex gap-6 justify-center mb-6">
         <div class="text-center">
-          <div class="text-3xl font-bold text-green-500">1</div>
+          <div class="text-4xl font-bold text-green-500">{doneCount}</div>
           <div class="text-sm text-muted-foreground">已完成</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-amber-500">1</div>
+          <div class="text-4xl font-bold text-amber-500">{doingCount}</div>
           <div class="text-sm text-muted-foreground">进行中</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-gray-500">3</div>
+          <div class="text-4xl font-bold text-gray-500">{pendingCount}</div>
           <div class="text-sm text-muted-foreground">待开始</div>
         </div>
       </div>
+      
+      <div class="h-3 bg-secondary rounded-full overflow-hidden">
+        <div 
+          class="h-full bg-gradient-to-r from-green-500 to-accent transition-all duration-500"
+          style={`width: ${(doneCount / todos.length) * 100}%`}
+        />
+      </div>
+      <p class="text-center text-sm text-muted-foreground mt-2">
+        总体进度：{Math.round((doneCount / todos.length) * 100)}%
+      </p>
     </CollageCard>
 
     <section class="space-y-4">
+      <h2 class="text-xl font-bold flex items-center gap-2">
+        <div class="w-2 h-6 bg-accent" />
+        任务列表
+      </h2>
+      
       {todos.map((todo, index) => {
         const rotation = ((index % 2) - 0.5) * 1;
         return (
           <CollageCard rotation={rotation} class="p-4 flex items-center justify-between">
             <div class="flex items-center gap-4">
               <div
-                class="w-4 h-4 rounded-full border-2"
+                class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
                 style={{
                   borderColor: statusColors[todo.status],
                   backgroundColor: todo.status === 'done' ? statusColors[todo.status] : 'transparent',
                 }}
-              />
-              <span class:list={[todo.status === 'done' && 'line-through text-muted-foreground']}>
-                {todo.title}
-              </span>
+              >
+                {todo.status === 'done' && (
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                )}
+              </div>
+              <div>
+                <span class:list={[todo.status === 'done' && 'line-through text-muted-foreground', 'font-medium']}>
+                  {todo.title}
+                </span>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-xs px-2 py-0.5 bg-secondary">{todo.category}</span>
+                  <span class:list={['text-xs', todo.priority === 'high' ? 'text-red-500' : todo.priority === 'medium' ? 'text-amber-500' : 'text-gray-400']}>
+                    {priorityLabels[todo.priority]}优先级
+                  </span>
+                </div>
+              </div>
             </div>
             <span
-              class="px-2 py-1 text-xs"
-              style={{ backgroundColor: `${statusColors[todo.status]}20`, color: statusColors[todo.status] }}
+              class="px-3 py-1 text-xs border-2"
+              style={{ 
+                borderColor: statusColors[todo.status],
+                color: statusColors[todo.status]
+              }}
             >
               {statusLabels[todo.status]}
             </span>
@@ -84,11 +134,15 @@ const statusLabels: Record<string, string> = {
     </section>
 
     <CollageCard rotation={-0.5} class="p-6 text-center bg-secondary/50">
-      <p class="text-muted-foreground">
-        数据来源：Notion 同步
-      </p>
+      <div class="flex items-center justify-center gap-2 mb-2">
+        <svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <span class="text-muted-foreground">数据来源</span>
+      </div>
+      <p class="font-medium">Notion 同步</p>
       <p class="text-xs text-muted-foreground mt-2">
-        最后更新：2026-02-16
+        最后更新：2026-02-16 12:00
       </p>
     </CollageCard>
   </div>
