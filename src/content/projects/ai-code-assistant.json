@@ -1,0 +1,9 @@
+{
+  "name": "AI Code Assistant",
+  "description": "智能代码补全和生成工具，支持多种编程语言",
+  "url": "https://example.com/ai-code",
+  "category": "ai-tool",
+  "pricing": "freemium",
+  "featured": true,
+  "tags": ["AI", "编程", "效率"]
+}

@@ -1,41 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
+import { getCollection } from 'astro:content';
 
-const software = [
-  {
-    name: 'VS Code',
-    version: '1.85.0',
-    description: '强大的代码编辑器，支持多种编程语言',
-    platform: ['windows', 'mac', 'linux'],
-    category: 'development',
-    downloads: 1500,
-  },
-  {
-    name: 'Notion',
-    version: '2.0',
-    description: '全能笔记和知识管理工具',
-    platform: ['windows', 'mac', 'web'],
-    category: 'utility',
-    downloads: 1200,
-  },
-  {
-    name: 'Figma',
-    version: '2024.1',
-    description: '专业的UI/UX设计协作工具',
-    platform: ['windows', 'mac', 'web'],
-    category: 'design',
-    downloads: 800,
-  },
-  {
-    name: 'OBS Studio',
-    version: '30.0',
-    description: '开源的直播和录屏软件',
-    platform: ['windows', 'mac', 'linux'],
-    category: 'media',
-    downloads: 600,
-  },
-];
+const software = await getCollection('software');
 
 const platforms = [
   { id: 'all', label: '全部平台' },
@@ -79,23 +47,36 @@ const platformIcons: Record<string, string> = {
           <CollageCard rotation={rotation} class="p-6 cursor-pointer">
             <div class="flex items-start justify-between mb-3">
               <div>
-                <h2 class="text-xl font-bold">{item.name}</h2>
-                <span class="text-xs text-muted-foreground">v{item.version}</span>
+                <h2 class="text-xl font-bold">{item.data.name}</h2>
+                <span class="text-xs text-muted-foreground">v{item.data.version}</span>
               </div>
               <div class="flex gap-1">
-                {item.platform.map((p) => (
+                {item.data.platform.map((p) => (
                   <span class="text-lg" title={p}>{platformIcons[p]}</span>
                 ))}
               </div>
             </div>
-            <p class="text-muted-foreground text-sm mb-4">{item.description}</p>
+            <p class="text-muted-foreground text-sm mb-4">{item.data.description}</p>
             <div class="flex items-center justify-between">
               <span class="text-xs text-muted-foreground">
-                {item.downloads.toLocaleString()} 次下载
+                {item.data.category === 'development' ? '开发工具' :
+                 item.data.category === 'utility' ? '效率工具' :
+                 item.data.category === 'design' ? '设计工具' : '媒体工具'}
               </span>
-              <button class="nav-item nav-item-active text-sm px-3 py-1">
-                下载
-              </button>
+              {item.data.downloadUrl && (
+                <a href={item.data.downloadUrl} target="_blank" rel="noopener noreferrer">
+                  <button class="nav-item nav-item-active text-sm px-3 py-1">
+                    下载
+                  </button>
+                </a>
+              )}
+              {item.data.websiteUrl && !item.data.downloadUrl && (
+                <a href={item.data.websiteUrl} target="_blank" rel="noopener noreferrer">
+                  <button class="nav-item nav-item-inactive text-sm px-3 py-1">
+                    访问
+                  </button>
+                </a>
+              )}
             </div>
           </CollageCard>
         );
@@ -105,16 +86,29 @@ const platformIcons: Record<string, string> = {
     <CollageCard rotation={-0.3} class="p-6">
       <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
         <div class="w-2 h-6 bg-accent" />
-        热门下载
+        分类浏览
       </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {software.sort((a, b) => b.downloads - a.downloads).slice(0, 4).map((item, index) => (
-          <div class="text-center p-3 border-2 border-primary/20">
-            <div class="text-2xl font-bold text-accent mb-1">#{index + 1}</div>
-            <p class="font-medium text-sm">{item.name}</p>
-            <p class="text-xs text-muted-foreground">{item.downloads.toLocaleString()} 次</p>
-          </div>
-        ))}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-2">💻</div>
+          <p class="font-medium">开发工具</p>
+          <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'development').length} 款</p>
+        </div>
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-2">⚡</div>
+          <p class="font-medium">效率工具</p>
+          <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'utility').length} 款</p>
+        </div>
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-2">🎨</div>
+          <p class="font-medium">设计工具</p>
+          <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'design').length} 款</p>
+        </div>
+        <div class="p-4 border-2 border-primary/20 cursor-pointer hover:border-primary/40 transition-colors">
+          <div class="text-2xl mb-2">🎬</div>
+          <p class="font-medium">媒体工具</p>
+          <p class="text-xs text-muted-foreground">{software.filter(s => s.data.category === 'media').length} 款</p>
+        </div>
       </div>
     </CollageCard>
   </div>

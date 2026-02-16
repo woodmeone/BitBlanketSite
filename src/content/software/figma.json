@@ -1,0 +1,9 @@
+{
+  "name": "Figma",
+  "version": "2024.1",
+  "description": "专业的UI/UX设计协作工具，支持实时多人编辑",
+  "platform": ["windows", "mac", "web"],
+  "category": "design",
+  "websiteUrl": "https://www.figma.com",
+  "tags": ["设计", "UI", "协作"]
+}

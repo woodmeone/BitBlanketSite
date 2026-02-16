@@ -1,0 +1,9 @@
+{
+  "name": "Notion Clone",
+  "description": "开源的笔记和知识管理工具，支持块编辑和数据库",
+  "url": "https://github.com/example/notion-clone",
+  "category": "open-source",
+  "pricing": "free",
+  "featured": false,
+  "tags": ["开源", "笔记", "知识管理"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "API Gateway",
+  "description": "轻量级API网关服务，支持限流、认证、监控",
+  "url": "https://example.com/api-gateway",
+  "category": "api",
+  "pricing": "freemium",
+  "featured": false,
+  "tags": ["API", "网关", "微服务"]
+}

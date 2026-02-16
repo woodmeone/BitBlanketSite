@@ -1,0 +1,9 @@
+{
+  "name": "Task Manager Pro",
+  "description": "高效的任务管理SaaS平台，支持团队协作",
+  "url": "https://example.com/task-manager",
+  "category": "saas",
+  "pricing": "subscription",
+  "featured": true,
+  "tags": ["任务管理", "团队协作", "SaaS"]
+}

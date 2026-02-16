@@ -1,0 +1,63 @@
+---
+export interface Props {
+  repo?: string;
+  repoId?: string;
+  category?: string;
+  categoryId?: string;
+  mapping?: string;
+  strict?: string;
+  reactionsEnabled?: string;
+  emitMetadata?: string;
+  inputPosition?: string;
+  theme?: string;
+  lang?: string;
+  loading?: string;
+}
+
+const {
+  repo = 'woodmeone/BitBlanketSite',
+  repoId = 'R_kgDONxxxxx',
+  category = 'Announcements',
+  categoryId = 'DIC_kwDONxxxxx',
+  mapping = 'pathname',
+  strict = '0',
+  reactionsEnabled = '1',
+  emitMetadata = '0',
+  inputPosition = 'top',
+  theme = 'preferred_color_scheme',
+  lang = 'zh-CN',
+  loading = 'lazy',
+} = Astro.props;
+---
+
+<div class="giscus-container">
+  <script 
+    src="https://giscus.app/client.js"
+    data-repo={repo}
+    data-repo-id={repoId}
+    data-category={category}
+    data-category-id={categoryId}
+    data-mapping={mapping}
+    data-strict={strict}
+    data-reactions-enabled={reactionsEnabled}
+    data-emit-metadata={emitMetadata}
+    data-input-position={inputPosition}
+    data-theme={theme}
+    data-lang={lang}
+    data-loading={loading}
+    crossorigin="anonymous"
+    async
+  ></script>
+</div>
+
+<style>
+  .giscus-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  .giscus-container :global(.giscus) {
+    max-width: 100%;
+  }
+</style>

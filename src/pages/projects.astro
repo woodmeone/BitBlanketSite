@@ -1,41 +1,9 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import CollageCard from '../components/collage/CollageCard.astro';
+import { getCollection } from 'astro:content';
 
-const projects = [
-  {
-    name: 'AI Code Assistant',
-    description: '智能代码补全和生成工具',
-    category: 'ai-tool',
-    pricing: 'freemium',
-    url: 'https://example.com/ai-code',
-    featured: true,
-  },
-  {
-    name: 'Notion Clone',
-    description: '开源的笔记和知识管理工具',
-    category: 'open-source',
-    pricing: 'free',
-    url: 'https://github.com/example/notion-clone',
-    featured: false,
-  },
-  {
-    name: 'Task Manager Pro',
-    description: '高效的任务管理SaaS平台',
-    category: 'saas',
-    pricing: 'subscription',
-    url: 'https://example.com/task-manager',
-    featured: true,
-  },
-  {
-    name: 'API Gateway',
-    description: '轻量级API网关服务',
-    category: 'api',
-    pricing: 'freemium',
-    url: 'https://example.com/api-gateway',
-    featured: false,
-  },
-];
+const projects = await getCollection('projects');
 
 const categories = [
   { id: 'all', label: '全部' },
@@ -76,17 +44,17 @@ const pricingLabels: Record<string, string> = {
       {projects.map((project, index) => {
         const rotation = ((index % 3) - 1) * 0.8;
         return (
-          <a href={project.url} target="_blank" rel="noopener noreferrer">
-            <CollageCard rotation={rotation} class:list={['p-6 h-full cursor-pointer', project.featured && 'border-accent/50']}>
+          <a href={project.data.url} target="_blank" rel="noopener noreferrer">
+            <CollageCard rotation={rotation} class:list={['p-6 h-full cursor-pointer', project.data.featured && 'border-accent/50']}>
               <div class="flex items-start justify-between mb-3">
-                <h2 class="text-xl font-bold">{project.name}</h2>
-                {project.featured && (
+                <h2 class="text-xl font-bold">{project.data.name}</h2>
+                {project.data.featured && (
                   <span class="px-2 py-1 text-xs bg-accent text-accent-foreground">精选</span>
                 )}
               </div>
-              <p class="text-muted-foreground text-sm mb-4">{project.description}</p>
+              <p class="text-muted-foreground text-sm mb-4">{project.data.description}</p>
               <div class="flex items-center justify-between text-xs">
-                <span class="px-2 py-0.5 bg-secondary">{pricingLabels[project.pricing]}</span>
+                <span class="px-2 py-0.5 bg-secondary">{pricingLabels[project.data.pricing]}</span>
                 <span class="text-muted-foreground flex items-center gap-1">
                   访问
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

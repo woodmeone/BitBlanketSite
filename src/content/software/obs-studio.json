@@ -1,0 +1,10 @@
+{
+  "name": "OBS Studio",
+  "version": "30.0",
+  "description": "开源的直播和录屏软件，功能强大且免费",
+  "platform": ["windows", "mac", "linux"],
+  "category": "media",
+  "downloadUrl": "https://obsproject.com/download",
+  "websiteUrl": "https://obsproject.com",
+  "tags": ["直播", "录屏", "开源"]
+}
