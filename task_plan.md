@@ -93,6 +93,17 @@
 
 ---
 
+## Phase 8: 本地数据库 UPDATE 修复 ✅
+
+**状态**: `completed`
+
+**完成内容**:
+- [x] 修复 LocalDatabase handleUpdate 正则匹配问题
+- [x] 支持多行 SQL 语句（使用 `[\s\S]` 替代 `.`）
+- [x] 处理 SET 子句中的换行符
+
+---
+
 ## 技术决策
 
 ### 本地开发方案
@@ -122,6 +133,7 @@
 | 动态页面使用 getStaticPaths 导致报错 | 1 | 移除 getStaticPaths，使用服务器端渲染 |
 | AdminLayout Tailwind CDN CORS 错误 | 1 | 移除 CDN，改用项目内置 Tailwind 配置 |
 | 后台编辑保存无反应 | 1 | 修复 Tailwind 加载问题 + db.ts 循环逻辑 |
+| LocalDatabase UPDATE 正则不匹配多行 SQL | 1 | 使用 `[\s\S]` 替代 `.` 匹配换行符 |
 
 ---
 

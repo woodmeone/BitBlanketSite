@@ -188,35 +188,35 @@ class LocalDatabase implements D1Database {
     const tableName = this.parseTableName(sql);
     const table = this.tables.get(tableName) || [];
     let changes = 0;
-    
-    const setMatch = sql.match(/SET\s+(.+?)\s+WHERE/i);
+
+    const setMatch = sql.match(/SET\s+([\s\S]+?)\s+WHERE/i);
     if (!setMatch) {
       return { results: [], success: true, meta: { duration: 0, changes: 0, last_row_id: 0, rows_read: 0, rows_written: 0 } };
     }
-    
+
     const idParam = params[params.length - 1];
     const idValue = typeof idParam === 'string' ? parseInt(idParam, 10) : idParam;
-    
+
     const idIndex = table.findIndex(r => {
       if (sql.includes('WHERE id = ?') || sql.includes('WHERE id=?')) {
         return r.id === idValue || String(r.id) === String(idParam);
       }
       return false;
     });
-    
+
     if (idIndex !== -1) {
-      const setClause = setMatch[1];
+      const setClause = setMatch[1].replace(/\s+/g, ' ').trim();
       const assignments = setClause.split(',').map(s => s.trim());
-      
+
       let paramIndex = 0;
-      
+
       for (const assignment of assignments) {
         const colMatch = assignment.match(/^(\w+)\s*=\s*(.+)$/);
         if (!colMatch) continue;
-        
+
         const col = colMatch[1];
         const value = colMatch[2].trim();
-        
+
         const incrementMatch = value.match(/^(\w+)\s*\+\s*\?$/);
         if (incrementMatch && incrementMatch[1] === col) {
           const increment = params[paramIndex];
@@ -229,12 +229,12 @@ class LocalDatabase implements D1Database {
           table[idIndex][col] = new Date().toISOString();
         }
       }
-      
+
       changes = 1;
     }
-    
+
     this.tables.set(tableName, table);
-    
+
     return {
       results: [],
       success: true,
