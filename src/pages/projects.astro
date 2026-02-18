@@ -19,9 +19,15 @@ const statusLabels: Record<string, string> = {
   completed: '已完成',
   archived: '已归档',
 };
+
+const keywords = 'AI工具, 开源项目, SaaS应用, API服务, 开发工具, 人工智能, 编程工具';
 ---
 
-<BaseLayout title="AI项目">
+<BaseLayout 
+  title="AI项目导航" 
+  description="发现优质AI工具和开源项目，助力你的开发之旅。包含AI工具、SaaS应用、开源项目、API服务等。"
+  keywords={keywords}
+>
   <div class="space-y-8">
     <section class="text-center py-8">
       <CollageCard rotation={-0.5} class="inline-block px-8 py-4">

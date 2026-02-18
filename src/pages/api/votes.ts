@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const votes = await query(
       db,
       'SELECT * FROM votes WHERE suggestion_id = ? AND voter_id = ?',
-      [suggestionId, voterId]
+      [parseInt(suggestionId), voterId]
     );
     
     return new Response(JSON.stringify({ 
@@ -71,12 +71,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
     
+    const suggestionIdNum = typeof suggestion_id === 'string' ? parseInt(suggestion_id) : suggestion_id;
     const voterId = providedVoterId || getVoterId(request);
     
     const existingVotes = await query(
       db,
       'SELECT * FROM votes WHERE suggestion_id = ? AND voter_id = ?',
-      [suggestion_id, voterId]
+      [suggestionIdNum, voterId]
     );
     
     if (existingVotes.length > 0) {
@@ -92,19 +93,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await execute(
       db,
       'INSERT INTO votes (suggestion_id, voter_id) VALUES (?, ?)',
-      [suggestion_id, voterId]
+      [suggestionIdNum, voterId]
     );
     
     await execute(
       db,
       'UPDATE suggestions SET votes = votes + 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [suggestion_id]
+      [suggestionIdNum]
     );
     
     const updatedSuggestion = await query(
       db,
       'SELECT votes FROM suggestions WHERE id = ?',
-      [suggestion_id]
+      [suggestionIdNum]
     );
     
     const newVotes = updatedSuggestion[0]?.votes || 0;

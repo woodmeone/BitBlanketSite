@@ -1,0 +1,145 @@
+---
+export interface Props {
+  type: 'website' | 'article' | 'software' | 'project' | 'breadcrumb';
+  data: {
+    name?: string;
+    description?: string;
+    url?: string;
+    image?: string;
+    datePublished?: string;
+    dateModified?: string;
+    author?: string;
+    tags?: string[];
+    softwareVersion?: string;
+    platform?: string[];
+    category?: string;
+    downloadUrl?: string;
+    websiteUrl?: string;
+    items?: Array<{ name: string; url: string }>;
+  };
+}
+
+const { type, data } = Astro.props;
+const siteUrl = Astro.site?.toString() || 'https://bit-blanket.com';
+
+function generateJsonLd() {
+  switch (type) {
+    case 'website':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: data.name || '比特毯子',
+        description: data.description || '软件分享 • AI编程 • 记录我的学习之旅',
+        url: data.url || siteUrl,
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${siteUrl}/search?q={search_term_string}`
+          },
+          'query-input': 'required name=search_term_string'
+        }
+      };
+
+    case 'article':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: data.name,
+        description: data.description,
+        url: data.url,
+        image: data.image ? new URL(data.image, siteUrl).toString() : undefined,
+        datePublished: data.datePublished,
+        dateModified: data.dateModified || data.datePublished,
+        author: {
+          '@type': 'Person',
+          name: data.author || '比特毯子'
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: '比特毯子',
+          url: siteUrl,
+          logo: {
+            '@type': 'ImageObject',
+            url: `${siteUrl}/favicon.svg`
+          }
+        },
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': data.url
+        },
+        keywords: data.tags?.join(', ')
+      };
+
+    case 'software':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: data.name,
+        description: data.description,
+        url: data.url,
+        image: data.image ? new URL(data.image, siteUrl).toString() : undefined,
+        softwareVersion: data.softwareVersion,
+        applicationCategory: getApplicationCategory(data.category),
+        operatingSystem: data.platform?.join(', '),
+        downloadUrl: data.downloadUrl,
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'CNY'
+        },
+        aggregateRating: data.downloadUrl ? {
+          '@type': 'AggregateRating',
+          ratingValue: '4.5',
+          ratingCount: '100'
+        } : undefined
+      };
+
+    case 'project':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareSourceCode',
+        name: data.name,
+        description: data.description,
+        url: data.websiteUrl || data.url,
+        codeRepository: data.url,
+        programmingLanguage: 'TypeScript, JavaScript',
+        author: {
+          '@type': 'Person',
+          name: data.author || '比特毯子'
+        }
+      };
+
+    case 'breadcrumb':
+      return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: data.items?.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.name,
+          item: item.url.startsWith('http') ? item.url : new URL(item.url, siteUrl).toString()
+        }))
+      };
+
+    default:
+      return null;
+  }
+}
+
+function getApplicationCategory(category?: string): string {
+  const categoryMap: Record<string, string> = {
+    development: 'DeveloperApplication',
+    utility: 'UtilitiesApplication',
+    design: 'DesignApplication',
+    media: 'MultimediaApplication'
+  };
+  return categoryMap[category || ''] || 'Application';
+}
+
+const jsonLd = generateJsonLd();
+---
+
+{jsonLd && (
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+)}

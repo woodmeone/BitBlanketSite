@@ -2,20 +2,39 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import JsonLd from '../components/SEO/JsonLd.astro';
 
 export interface Props {
   title: string;
   description?: string;
   image?: string;
+  keywords?: string;
+  article?: {
+    publishedTime?: string;
+    modifiedTime?: string;
+    author?: string;
+    tags?: string[];
+  };
+  jsonLd?: {
+    type: 'website' | 'article' | 'software' | 'project' | 'breadcrumb';
+    data: Record<string, any>;
+  };
 }
 
 const { 
   title, 
   description = '比特毯子 - 软件分享 • AI编程 • 记录我的学习之旅',
-  image = '/og-image.png'
+  image = '/og-image.png',
+  keywords,
+  article,
+  jsonLd
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const googleSiteVerification = import.meta.env.GOOGLE_SITE_VERIFICATION;
+const baiduSiteVerification = import.meta.env.BAIDU_SITE_VERIFICATION;
+const bingSiteVerification = import.meta.env.BING_SITE_VERIFICATION;
 ---
 
 <!doctype html>
@@ -27,21 +46,51 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     
     <title>{title} | 比特毯子</title>
     <meta name="description" content={description} />
+    {keywords && <meta name="keywords" content={keywords} />}
     <link rel="canonical" href={canonicalURL} />
     
-    <meta property="og:type" content="website" />
+    {googleSiteVerification && (
+      <meta name="google-site-verification" content={googleSiteVerification} />
+    )}
+    {baiduSiteVerification && (
+      <meta name="baidu-site-verification" content={baiduSiteVerification} />
+    )}
+    {bingSiteVerification && (
+      <meta name="msvalidate.01" content={bingSiteVerification} />
+    )}
+    
+    <meta property="og:type" content={article ? 'article' : 'website'} />
     <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={new URL(image, Astro.site)} />
+    <meta property="og:site_name" content="比特毯子" />
+    <meta property="og:locale" content="zh_CN" />
+    
+    {article?.publishedTime && (
+      <meta property="article:published_time" content={article.publishedTime} />
+    )}
+    {article?.modifiedTime && (
+      <meta property="article:modified_time" content={article.modifiedTime} />
+    )}
+    {article?.author && (
+      <meta property="article:author" content={article.author} />
+    )}
+    {article?.tags?.map(tag => (
+      <meta property="article:tag" content={tag} />
+    ))}
     
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={new URL(image, Astro.site)} />
+    <meta name="twitter:site" content="@bitblanket" />
     
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="alternate" type="application/rss+xml" title="比特毯子" href="/rss.xml" />
+    
+    <JsonLd type="website" data={{}} />
+    {jsonLd && <JsonLd type={jsonLd.type} data={jsonLd.data} />}
     
     <script is:inline>
       const theme = (() => {

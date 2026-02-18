@@ -28,9 +28,42 @@ const nextPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
 const tags = (post.tags || '').split(',').filter(t => t.trim());
 
 const renderedContent = post.content ? await marked(post.content) : '';
+
+const keywords = [
+  post.title,
+  post.category,
+  ...tags,
+  '技术博客',
+  '编程学习',
+  'AI编程'
+].filter(Boolean).join(', ');
+
+const pageUrl = new URL(`/blog/${slug}`, Astro.site).toString();
 ---
 
-<BaseLayout title={post.title} description={post.description || ''}>
+<BaseLayout 
+  title={post.title} 
+  description={post.description || ''}
+  keywords={keywords}
+  article={{
+    publishedTime: post.created_at,
+    modifiedTime: post.updated_at,
+    author: '比特毯子',
+    tags: tags
+  }}
+  jsonLd={{
+    type: 'article',
+    data: {
+      name: post.title,
+      description: post.description,
+      url: pageUrl,
+      datePublished: post.created_at,
+      dateModified: post.updated_at || post.created_at,
+      author: '比特毯子',
+      tags: tags
+    }
+  }}
+>
   <article class="max-w-3xl mx-auto space-y-8">
     <header class="text-center space-y-4 py-8">
       <CollageCard rotation={-0.3} class="inline-block px-8 py-4">

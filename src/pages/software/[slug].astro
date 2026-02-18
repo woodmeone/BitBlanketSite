@@ -20,9 +20,37 @@ const platformIcons: Record<string, string> = {
 
 const platformList = (item.platform || '').split(',').filter(p => p.trim());
 const renderedContent = item.content ? await marked(item.content) : '';
+
+const keywords = [
+  item.name,
+  item.category,
+  ...(item.tags || '').split(',').filter((t: string) => t.trim()),
+  '软件推荐',
+  '软件下载',
+  '免费软件'
+].filter(Boolean).join(', ');
+
+const pageUrl = new URL(`/software/${slug}`, Astro.site).toString();
 ---
 
-<BaseLayout title={item.name} description={item.description || ''}>
+<BaseLayout 
+  title={item.name} 
+  description={item.description || ''}
+  keywords={keywords}
+  jsonLd={{
+    type: 'software',
+    data: {
+      name: item.name,
+      description: item.description,
+      url: pageUrl,
+      softwareVersion: item.version,
+      platform: platformList,
+      category: item.category,
+      downloadUrl: item.download,
+      websiteUrl: item.website
+    }
+  }}
+>
   <div class="max-w-4xl mx-auto space-y-8">
     <section class="py-8">
       <a href="/software" class="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-6">

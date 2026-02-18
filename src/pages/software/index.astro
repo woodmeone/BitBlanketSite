@@ -29,9 +29,15 @@ const softwareData = software.map(item => ({
   category: item.category,
   rating: item.rating || 0
 }));
+
+const keywords = '软件推荐, 免费软件, Windows软件, Mac软件, 开发工具, 生产力工具, 软件下载, 效率工具';
 ---
 
-<BaseLayout title="分享">
+<BaseLayout 
+  title="软件分享" 
+  description="精选实用软件工具，提升你的工作效率。包含Windows、macOS、Linux、Web平台优质软件推荐。"
+  keywords={keywords}
+>
   <div class="space-y-8">
     <section class="text-center py-8">
       <CollageCard rotation={-0.5} class="inline-block px-8 py-4">

@@ -1,6 +1,26 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bit-blanket.com/sitemap-index.xml
-
+Disallow: /admin/
 Disallow: /api/
+Disallow: /todos/
+Disallow: /login
+Disallow: /*.json$
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Sogou
+Allow: /
+Crawl-delay: 3
+
+Sitemap: https://bitblanket.top/sitemap-index.xml
