@@ -125,6 +125,15 @@ class LocalDatabase implements D1Database {
       results = results.filter(r => r.status !== status);
     }
     
+    if (sql.includes('WHERE suggestion_id = ? AND voter_id = ?') || 
+        sql.includes('WHERE suggestion_id=? AND voter_id=?')) {
+      const suggestionId = params[0];
+      const voterId = params[1];
+      results = results.filter(r => 
+        r.suggestion_id === suggestionId && r.voter_id === voterId
+      );
+    }
+    
     if (sql.includes('ORDER BY created_at DESC')) {
       results.sort((a, b) => {
         const aTime = new Date(a.created_at as string || 0).getTime();
@@ -159,10 +168,13 @@ class LocalDatabase implements D1Database {
     this.lastRowId++;
     const now = new Date().toISOString();
     
-    const columnsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
-    const columns = columnsMatch 
-      ? columnsMatch[1].split(',').map(c => c.trim())
-      : [];
+    const columnsMatch = sql.match(/\(([^)]+)\)\s*VALUES\s*\(([^)]+)\)/i);
+    if (!columnsMatch) {
+      return { results: [], success: false, error: 'Invalid INSERT syntax' };
+    }
+    
+    const columns = columnsMatch[1].split(',').map(c => c.trim());
+    const valuesPart = columnsMatch[2];
     
     const row: DataRow = {
       id: this.lastRowId,
@@ -170,8 +182,24 @@ class LocalDatabase implements D1Database {
       updated_at: now
     };
     
+    let paramIndex = 0;
+    const valueTokens = this.parseValues(valuesPart);
+    
     columns.forEach((col, i) => {
-      row[col] = params[i];
+      const token = valueTokens[i];
+      if (token === '?') {
+        row[col] = params[paramIndex++];
+      } else if (token.toUpperCase() === 'CURRENT_TIMESTAMP') {
+        row[col] = now;
+      } else if (token.startsWith("'") && token.endsWith("'")) {
+        row[col] = token.slice(1, -1);
+      } else if (!isNaN(Number(token))) {
+        row[col] = Number(token);
+      } else if (token.toUpperCase() === 'TRUE' || token.toUpperCase() === 'FALSE') {
+        row[col] = token.toUpperCase() === 'TRUE';
+      } else {
+        row[col] = token;
+      }
     });
     
     table.push(row);
@@ -182,6 +210,41 @@ class LocalDatabase implements D1Database {
       success: true,
       meta: { duration: 0, changes: 1, last_row_id: this.lastRowId, rows_read: 0, rows_written: 1 }
     };
+  }
+
+  private parseValues(valuesStr: string): string[] {
+    const tokens: string[] = [];
+    let current = '';
+    let inString = false;
+    let stringChar = '';
+    
+    for (let i = 0; i < valuesStr.length; i++) {
+      const char = valuesStr[i];
+      
+      if (!inString && (char === "'" || char === '"')) {
+        inString = true;
+        stringChar = char;
+        current += char;
+      } else if (inString && char === stringChar) {
+        current += char;
+        if (i + 1 < valuesStr.length && valuesStr[i + 1] === stringChar) {
+          current += valuesStr[++i];
+        } else {
+          inString = false;
+        }
+      } else if (!inString && char === ',') {
+        tokens.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    if (current.trim()) {
+      tokens.push(current.trim());
+    }
+    
+    return tokens;
   }
 
   private handleUpdate(sql: string, params: unknown[]): D1Result {

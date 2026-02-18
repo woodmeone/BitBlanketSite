@@ -104,6 +104,24 @@
 
 ---
 
+## Phase 9: 粉丝互动面板优化 ✅
+
+**状态**: `completed`
+
+**完成内容**:
+- [x] 管理面板：采纳后仍可删除，显示"已采纳"标识
+- [x] 管理面板：忽略功能改为改状态为 rejected（保留记录）
+- [x] 管理面板：删除按钮始终显示，采纳后删除需二次确认
+- [x] 前台社区：已采纳建议显示角标动画
+- [x] 前台社区：状态标签（已采纳/进行中/已完成）
+- [x] 投票系统：创建 /api/votes 接口
+- [x] 投票系统：VoteButton.vue 调用 API 持久化
+- [x] 投票系统：localStorage + voter_id 防重复机制
+- [x] 列表排序：按投票数从高到低排序
+- [x] 本地数据库：修复 handleInsert 解析 SQL 字面量问题
+
+---
+
 ## 技术决策
 
 ### 本地开发方案
@@ -134,6 +152,7 @@
 | AdminLayout Tailwind CDN CORS 错误 | 1 | 移除 CDN，改用项目内置 Tailwind 配置 |
 | 后台编辑保存无反应 | 1 | 修复 Tailwind 加载问题 + db.ts 循环逻辑 |
 | LocalDatabase UPDATE 正则不匹配多行 SQL | 1 | 使用 `[\s\S]` 替代 `.` 匹配换行符 |
+| LocalDatabase INSERT 无法解析 SQL 字面量 | 1 | 重写 handleInsert，添加 parseValues 方法解析字符串/数字字面量 |
 
 ---
 

@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
       sql += ' WHERE ' + conditions.join(' AND ');
     }
     
-    sql += ' ORDER BY created_at DESC';
+    sql += ' ORDER BY votes DESC, created_at DESC';
     
     const suggestions = await query(db, sql, params);
     
